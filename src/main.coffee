@@ -92,15 +92,6 @@ remit_defaults  =
   has_returned          = false
   send                  = null
   #.........................................................................................................
-  # on_end = ->
-  #   if send_last
-  #     self = @
-  #     method data_last, send
-  #     self = null
-  #   # defer -> @queue ME.symbols.end
-  #   @queue ME.symbols.end
-  #   return null
-  #.........................................................................................................
   tsend = ( d ) =>
     throw new Error "µ55663 illegal to call send() after method has returned" if has_returned
     send d
