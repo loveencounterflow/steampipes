@@ -317,24 +317,5 @@ remit_defaults  =
 
 
 
-############################################################################################################
-unless module.parent?
-  do =>
-    PS        = require 'pipestreams'
-    PDNG      = @
-    ps_names  = ( ps_name for ps_name of PS ).sort()
-    hits      = 0
-    for ps_name in ps_names
-      continue if ps_name.startsWith '_'
-      if PDNG[ ps_name ]?
-        hits++
-        pdng_color = CND.green
-      else
-        pdng_color = CND.red
-      ps_name_txt = to_width ps_name, 40, { padder: ' ', align: 'left', }
-      echo ( CND.green ps_name_txt ), ( pdng_color ps_name_txt )
-    nf          = require 'number-format.js'
-    percentage  = nf '##0.0', ( hits / ps_names.length ) * 100
-    echo "implemented #{percentage}%"
 
 
