@@ -49,16 +49,20 @@ intertype                 = new Intertype module.exports
     "x.$vnr is an optional nonempty list of positive integers": ( x ) ->
       ( not x.$vnr? ) or @isa.pd_nonempty_list_of_positive_integers x.$vnr
 
-    # "?..$vnr is a ?positive":            ( x ) -> ( not x.$vnr? ) or @isa.positive x.$vnr
-#     "? has key 'vlnr_txt'":                   ( x ) -> @has_key             x, 'vlnr_txt'
-#     "? has key 'value'":                      ( x ) -> @has_key             x, 'value'
-#     "?.vlnr_txt is a nonempty text":          ( x ) -> @isa.nonempty_text   x.vlnr_txt
-#     "?.vlnr_txt starts, ends with '[]'":      ( x ) -> ( x.vlnr_txt.match /^\[.*\]$/ )?
-#     "?.vlnr_txt is a JSON array of integers": ( x ) ->
-#       # debug 'µ55589', x
-#       ( @isa.list ( lst = JSON.parse x.vlnr_txt ) ) and \
-#       ( lst.every ( xx ) => ( @isa.integer xx ) and ( @isa.positive xx ) )
+# #-----------------------------------------------------------------------------------------------------------
+# declare 'pipestreams_is_sink_or_through',
+#   tests:
+#     "x is a function":                        ( x ) -> @isa.function x
+#     "x's arity is 1":                         ( x ) -> x.length is 1
 
 # #-----------------------------------------------------------------------------------------------------------
-# @declare 'true', ( x ) -> x is true
+# declare 'pipestreams_is_sink',
+#   tests:
+#     "x is a pipestreams_is_sink_or_through":  ( x ) -> @isa.pipestreams_is_sink_or_through x
+#     "x[ Symbol.for 'sink' ] is true":         ( x ) -> x[ Symbol.for 'sink' ] ? false
 
+# #-----------------------------------------------------------------------------------------------------------
+# declare 'pipestreams_is_source',
+#   tests:
+#     "x is a function":                        ( x ) -> @isa.function x
+#     "x's arity is 2":                         ( x ) -> x.length is 2
