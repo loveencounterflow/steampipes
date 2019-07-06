@@ -140,7 +140,31 @@ remit_defaults  =
 #   method d, send
 
 #-----------------------------------------------------------------------------------------------------------
-@$watch = ( method ) => @$ ( d, send ) => method d; send d
+$watch = ( settings, method ) ->
+  switch arity = arguments.length
+    when 1
+      method = settings
+      return @$ ( d, send ) => method d; send d
+    #.......................................................................................................
+    when 2
+      return @$watch method unless settings?
+      ### If any `surround` feature is called for, wrap all surround values so that we can safely
+      distinguish between them and ordinary stream values; this is necessary to prevent them from leaking
+      into the regular stream outside the `$watch` transform: ###
+      take_second     = Symbol 'take-second'
+      settings        = assign {}, settings
+      settings[ key ] = [ take_second, value, ] for key, value of settings
+      #.....................................................................................................
+      return @$ settings, ( d, send ) =>
+        if ( CND.isa_list d ) and ( d[ 0 ] is take_second )
+          method d[ 1 ]
+        else
+          method d
+          send d
+        return null
+  #.........................................................................................................
+  throw new Error "µ18244 expected one or two arguments, got #{arity}"
+@$watch = $watch.bind @
 
 #-----------------------------------------------------------------------------------------------------------
 @$as_text = ( settings ) -> ( d, send ) =>
