@@ -219,69 +219,69 @@ jr                        = JSON.stringify
     done()
   SP.pull pipeline...
 
-# #-----------------------------------------------------------------------------------------------------------
-# @[ "remit with end detection 1" ] = ( T, done ) ->
-#   throw new Error "µ22920 symbols.end is not defined" if SP.symbols.end is undefined
-#   last      = Symbol 'last'
-#   result    = []
-#   pipeline  = []
-#   pipeline.push Array.from 'abcdefgh'
-#   pipeline.push SP.$map ( d ) -> d.toUpperCase()
-#   pipeline.push $ ( d, send ) -> send if d is 'E' then SP.symbols.end else d
-#   pipeline.push SP.$pass()
-#   pipeline.push SP.$show()
-#   pipeline.push $ { last, }, ( d, send ) ->
-#     return send 'ok' if d is last
-#     send d
-#     send '*' + d + '*'
-#   pipeline.push $watch ( d ) -> result.push d
-#   pipeline.push SP.$drain ->
-#     debug 'µ33398', jr result
-#     T.eq result, ["A","*A*","B","*B*","C","*C*","D","*D*","ok"]
-#     done()
-#   SP.pull pipeline...
-
 #-----------------------------------------------------------------------------------------------------------
 @[ "remit with end detection 2" ] = ( T, done ) ->
-  ### One of the proper ways to end (a.k.a. abort) a stream is to call `send.end()`. ###
-  pull_through              = require '../../deps/pull-through-with-end-symbol'
-  pipeline = []
-  pipeline.push SP.new_value_source Array.from 'abcdef'
-  pipeline.push SP.$map ( d ) -> return d
-  pipeline.push $ ( d, send ) -> if d is 'c' then send.end() else send d
-  pipeline.push SP.$pass()
-  pipeline.push pull_through ( ( d ) -> @queue d )
-  pipeline.push $ { last: null, }, ( data, send ) ->
-    if data?
-      send data
-      send '*' + data + '*'
-    else
-      send 'ok'
-  pipeline.push $pull_drain null, ->
-    T.succeed "ok"
+  last      = Symbol 'last'
+  result    = []
+  pipeline  = []
+  pipeline.push Array.from 'abcdefg'
+  pipeline.push SP.$map ( d ) -> d.toUpperCase()
+  pipeline.push $ ( d, send ) -> if d is 'E' then send.end() else send d
+  pipeline.push SP.$show()
+  pipeline.push $ { last, }, ( d, send ) ->
+    debug 'µ445522', d
+    return send 'ok' if d is last
+    send d
+    send "(#{d})"
+  pipeline.push $watch ( d ) -> result.push d
+  pipeline.push SP.$drain ->
+    result = result.join ''
+    T.eq result, "A(A)B(B)C(C)D(D)ok"
+    done()
+  SP.pull pipeline...
+
+#-----------------------------------------------------------------------------------------------------------
+@[ "remit with surrounds" ] = ( T, done ) ->
+  first     = '['
+  before    = '('
+  between   = '|'
+  after     = ')'
+  last      = ']'
+  result    = []
+  pipeline  = []
+  pipeline.push Array.from 'abcd'
+  pipeline.push SP.$show()
+  pipeline.push $ { first, before, between, after, last, }, ( d, send ) -> send d.toUpperCase()
+  pipeline.push $watch ( d ) -> result.push d
+  pipeline.push SP.$drain ->
+    result = result.join ''
+    T.eq result, '[(A)|(B)|(C)|(D)]'
     done()
   SP.pull pipeline...
 
 #-----------------------------------------------------------------------------------------------------------
 @[ "watch with end detection 1" ] = ( T, done ) ->
-  [ probe, matcher, error, ] = ["abcdef",["(","*a*","|","*b*","|","*c*","|","*d*","|","*e*","|","*f*",")"],null]
+  [ probe, matcher, error, ] = ["abcd",'[(A)|(B)|(C)|(D)]',null]
   await T.perform probe, matcher, error, -> new Promise ( resolve, reject ) ->
+    first     = '['
+    before    = '('
+    between   = '|'
+    after     = ')'
+    last      = ']'
     collector = []
     pipeline  = []
-    pipeline.push SP.new_value_source Array.from probe
-    pipeline.push $ ( d, send ) -> send "*#{d}*"
-    pipeline.push SP.$watch { first: '(', between: '|', last: ')', }, ( d ) ->
-      debug '44874', xrpr d
-      collector.push d
-    # pipeline.push SP.$collect { collector, }
+    pipeline.push Array.from probe
+    pipeline.push SP.$watch { first, before, between, after, last, }, ( d ) ->
+      # debug '44874', xrpr d
+      collector.push d.toUpperCase()
     pipeline.push SP.$drain ->
-      help 'ok'
-      debug '44874', xrpr collector
+      collector = collector.join ''
       resolve collector
     SP.pull pipeline...
   #.........................................................................................................
   done()
   return null
+###
 
 #-----------------------------------------------------------------------------------------------------------
 @[ "watch with end detection 2" ] = ( T, done ) ->
@@ -405,7 +405,7 @@ jr                        = JSON.stringify
 
 #-----------------------------------------------------------------------------------------------------------
 @[ "end push source (1)" ] = ( T, done ) ->
-  ### The proper way to end a push source is to call `source.end()`. ###
+  # The proper way to end a push source is to call `source.end()`.
   [ probe, matcher, error, ] = [["what","a","lot","of","little","bottles"],["what","a","lot","of","little","bottles"],null]
   await T.perform probe, matcher, error, -> return new Promise ( resolve, reject ) ->
     R         = []
@@ -428,7 +428,7 @@ jr                        = JSON.stringify
 
 #-----------------------------------------------------------------------------------------------------------
 @[ "end push source (2)" ] = ( T, done ) ->
-  ### The proper way to end a push source is to call `source.end()`. ###
+  # The proper way to end a push source is to call `source.end()`.
   [ probe, matcher, error, ] = [["what","a","lot","of","little","bottles","stop"],["what","a","lot","of","little","bottles"],null]
   await T.perform probe, matcher, error, -> return new Promise ( resolve, reject ) ->
     R         = []
@@ -451,7 +451,7 @@ jr                        = JSON.stringify
 
 #-----------------------------------------------------------------------------------------------------------
 @[ "end push source (3)" ] = ( T, done ) ->
-  ### The proper way to end a push source is to call `source.end()`; `send.end()` is largely equivalent. ###
+  # The proper way to end a push source is to call `source.end()`; `send.end()` is largely equivalent.
   [ probe, matcher, error, ] = [["what","a","lot","of","little","bottles","stop"],["what","a","lot","of","little","bottles"],null]
   await T.perform probe, matcher, error, -> return new Promise ( resolve, reject ) ->
     R         = []
@@ -474,7 +474,7 @@ jr                        = JSON.stringify
 
 #-----------------------------------------------------------------------------------------------------------
 @[ "end push source (4)" ] = ( T, done ) ->
-  ### A stream may be ended by using an `$end_if()` (alternatively, `$continue_if()`) transform. ###
+  # A stream may be ended by using an `$end_if()` (alternatively, `$continue_if()`) transform.
   [ probe, matcher, error, ] = [["what","a","lot","of","little","bottles","stop"],["what","a","lot","of","little","bottles"],null]
   await T.perform probe, matcher, error, -> return new Promise ( resolve, reject ) ->
     R         = []
@@ -701,14 +701,15 @@ jr                        = JSON.stringify
   #.........................................................................................................
   done()
   return null
-
+###
 
 ############################################################################################################
 unless module.parent?
-  # test @, 'timeout': 30000
+  test @, 'timeout': 30000
   # test @[ "remit"                           ]
-  test @[ "remit with end detection 1"      ]
+  # test @[ "remit with end detection 1"      ]
   # test @[ "remit with end detection 2"      ]
+  # test @[ "remit with surrounds" ]
   # test @[ "watch with end detection 1"      ]
   # test @[ "watch with end detection 2"      ]
   # test @[ "wrap FS object for sink"         ]
