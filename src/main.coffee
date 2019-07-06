@@ -18,8 +18,7 @@ echo                      = CND.echo.bind CND
 { jr }                    = CND
 assign                    = Object.assign
 #...........................................................................................................
-PD                        = require 'pipedreams11'
-types                     = require '../types'
+types                     = require './_types'
 { isa
   validate
   declare
