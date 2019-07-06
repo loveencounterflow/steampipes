@@ -177,7 +177,6 @@ remit_defaults  =
 
 #-----------------------------------------------------------------------------------------------------------
 @pull = ( transforms... ) ->
-  # transforms      = transforms.flat Infinity
   description     = @_classify_pipeline transforms
   has_sink        = false
   has_source      = false
