@@ -27,41 +27,115 @@ types                     = require '../types'
   last_of
   size_of
   type_of }               = types
-{ to_width
-  width_of }              = require 'to-width'
-
-#-----------------------------------------------------------------------------------------------------------
-declare 'pipestreams_is_sink_or_through',
-  tests:
-    "x is a function":                        ( x ) -> @isa.function x
-    "x's arity is 1":                         ( x ) -> x.length is 1
-
-#-----------------------------------------------------------------------------------------------------------
-declare 'pipestreams_is_sink',
-  tests:
-    "x is a pipestreams_is_sink_or_through":  ( x ) -> @isa.pipestreams_is_sink_or_through x
-    "x[ Symbol.for 'sink' ] is true":         ( x ) -> x[ Symbol.for 'sink' ] ? false
-
-#-----------------------------------------------------------------------------------------------------------
-declare 'pipestreams_is_source',
-  tests:
-    "x is a function":                        ( x ) -> @isa.function x
-    "x's arity is 2":                         ( x ) -> x.length is 2
-
 
 
 #===========================================================================================================
 #
 #-----------------------------------------------------------------------------------------------------------
-@remit  = @$ = ( method ) -> method
-@$map   = ( method ) -> ( d, send ) => send method d
-@$drain = ( on_end = null ) -> { [@symbols.sink], on_end, }
+@symbols =
+  sink:       Symbol 'sink'       # Marks a sink (only used by `$drain()`)
+  last:       Symbol 'last'       # May be used to signal last  data item
+  first:      Symbol 'first'      # May be used to signal first data item
+  end:        Symbol 'end'        # Request stream to terminate
+  misfit:     Symbol 'misfit'     # Bottom value
+  send_last:  Symbol 'send_last'  # Request to get called once more after has ended
 
 #-----------------------------------------------------------------------------------------------------------
-@symbols =
-  sink:       Symbol 'sink'
-  last:       Symbol 'last'
-  first:      Symbol 'first'
+remit_defaults  =
+  first:    @symbols.misfit
+  last:     @symbols.misfit
+  between:  @symbols.misfit
+  after:    @symbols.misfit
+  before:   @symbols.misfit
+
+
+#===========================================================================================================
+#
+#-----------------------------------------------------------------------------------------------------------
+@_get_remit_settings = ( settings, method ) ->
+  switch remit_arity = arguments.length
+    when 1 then [ method, settings, ] = [ settings, null, ]
+    when 2 then settings = { remit_defaults..., settings..., }
+    else throw new Error "µ19358 expected 1 or 2 arguments, got #{remit_arity}"
+  #.........................................................................................................
+  validate.function method
+  throw new Error "µ20123 method arity #{arity} not implemented" unless ( arity = method.length ) is 2
+  if settings?
+    validate.function settings.leapfrog if settings.leapfrog?
+    settings._surround = \
+      ( settings.first    isnt @symbols.misfit ) or \
+      ( settings.last     isnt @symbols.misfit ) or \
+      ( settings.between  isnt @symbols.misfit ) or \
+      ( settings.after    isnt @symbols.misfit ) or \
+      ( settings.before   isnt @symbols.misfit )
+  #.........................................................................................................
+  return { settings, method, }
+
+#-----------------------------------------------------------------------------------------------------------
+@remit  = @$ = ( P... ) =>
+  { settings, method, } = @_get_remit_settings P...
+  return method if settings is null
+  self                  = null
+  do_leapfrog           = settings.leapfrog
+  data_first            = settings.first
+  data_before           = settings.before
+  data_between          = settings.between
+  data_after            = settings.after
+  data_last             = settings.last
+  send_first            = data_first    isnt @symbols.misfit
+  send_before           = data_before   isnt @symbols.misfit
+  send_between          = data_between  isnt @symbols.misfit
+  send_after            = data_after    isnt @symbols.misfit
+  send_last             = data_last     isnt @symbols.misfit
+  on_end                = null
+  is_first              = true
+  ME                    = @
+  has_returned          = false
+  send                  = null
+  #.........................................................................................................
+  # on_end = ->
+  #   if send_last
+  #     self = @
+  #     method data_last, send
+  #     self = null
+  #   # defer -> @queue ME.symbols.end
+  #   @queue ME.symbols.end
+  #   return null
+  #.........................................................................................................
+  tsend = ( d ) =>
+    throw new Error "µ55663 illegal to call send() after method has returned" if has_returned
+    send d
+  #.........................................................................................................
+  R = ( d, send_ ) =>
+    # debug 'µ55641', d, d is @symbols.last
+    send          = send_
+    has_returned  = false
+    #.......................................................................................................
+    if send_last and d is @symbols.last
+      method data_last, tsend
+    #.......................................................................................................
+    else
+      if is_first then ( ( method data_first,   tsend ) if send_first   )
+      else             ( ( method data_between, tsend ) if send_between )
+      ( method data_before, tsend ) if send_before
+      is_first = false
+      #.....................................................................................................
+      # When leapfrogging is being called for, only call method if the jumper returns false:
+      if ( not do_leapfrog ) or ( not settings.leapfrog d ) then  method d, tsend
+      else                                                        send d
+      #.....................................................................................................
+      ( method data_after, tsend ) if send_after
+    has_returned = true
+    return null
+  #.........................................................................................................
+  R[ @symbols.send_last ] = true if send_last
+  return R
+
+
+#-----------------------------------------------------------------------------------------------------------
+@$map   = ( method ) -> ( d, send ) => send method d
+@$drain = ( on_end = null ) -> { [@symbols.sink], on_end, }
+@$pass  = -> ( d, send ) => send d
 
 #-----------------------------------------------------------------------------------------------------------
 @$show = ( settings ) ->
