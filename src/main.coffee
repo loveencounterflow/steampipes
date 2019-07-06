@@ -201,11 +201,10 @@ remit_defaults  =
   mem_sources     = [ mem_source, ( [] for _ in [ 0 ... transforms.length ] )..., ]
   local_sink      = null
   local_source    = null
+  last            = @symbols.last
   send            = ( d ) -> local_sink.push d
   #.........................................................................................................
-  for d from original_source
-    mem_source.push d
-    #.......................................................................................................
+  exhaust_pipeline = =>
     loop
       has_data = false
       for transform, idx in transforms
@@ -213,12 +212,102 @@ remit_defaults  =
         has_data      = true
         local_sink    = mem_sources[ idx + 1 ]
         d             = local_source.shift()
-        transform d, send
+        if d is last
+          transform d, send if transform[ @symbols.send_last ]?
+          send last
+        else
+          transform d, send
       break unless has_data
+    return null
   #.........................................................................................................
-  # warn "µ77768 stream has ended; should call transforms as appropriate"
+  for iterable in [ original_source, [ last, ], ]
+    ### :main_iterator ###
+    for d from iterable
+      ### :source_iterator ###
+      mem_source.push d
+      exhaust_pipeline()
+  #.........................................................................................................
   on_end() if on_end?
   return null
+
+
+# #-----------------------------------------------------------------------------------------------------------
+# @pull = ( transforms... ) ->
+#   # transforms      = transforms.flat Infinity
+#   description     = @_classify_pipeline transforms
+#   has_sink        = false
+#   has_source      = false
+#   on_end          = null
+#   original_source = null
+#   throw new Error "µ77764 source as last transform not yet supported" if description.last.type  is 'source'
+#   throw new Error "µ77765 sink as first transform not yet supported"  if description.first.type is 'sink'
+#   #.........................................................................................................
+#   if description.first.type is 'source'
+#     original_source = transforms.shift()
+#     original_source = original_source() if description.first.must_call
+#     has_source      = true
+#   #.........................................................................................................
+#   if description.last.type is 'sink'
+#     has_sink  = true
+#     on_end    = description.last.on_end
+#     transforms.pop()
+#   #.........................................................................................................
+#   ### TAINT shouldn't return null here; return pipeline? ###
+#   return null unless has_sink and has_source
+#   #.........................................................................................................
+#   mem_source      = []
+#   mem_sources     = [ mem_source, ( [] for _ in [ 0 ... transforms.length ] )..., ]
+#   local_sink      = null
+#   local_source    = null
+#   has_ended       = false
+#   terminate_now   = false
+#   #.........................................................................................................
+#   send = ( d ) =>
+#     return has_ended = true if d is @symbols.end
+#     local_sink.push d
+#   send.end = => has_ended = true
+#   #.........................................................................................................
+#   for iterable in [ original_source, [ @symbols.last, ], ]
+#     ### :main_iterator ###
+#     for d from iterable
+#       ### :source_iterator ###
+#       loop
+#         ### :insert_last ###
+#         if has_ended
+#           terminate_now = true
+#           d             = @symbols.last
+#         debug 'µ77785-1', d
+#         mem_source.push d
+#         loop
+#           ### :transforms_loop ###
+#           has_data = false
+#           for transform, idx in transforms
+#             send_last     = transform[ @symbols.send_last ]?
+#             local_sink    = mem_sources[ idx + 1 ]
+#             local_source  = mem_sources[ idx ]
+#             if local_source.length is 0
+#               if has_ended and send_last
+#                 transform @symbols.last, send
+#                 # has_data = true if local_sink.length > 0
+#               continue
+#             has_data      = true
+#             d             = local_source.shift()
+#             transform d, send unless ( d is @symbols.last ) and ( not send_last )
+#           ### :transforms_loop ###
+#           debug 'µ77785-2', d, not has_data
+#           break unless has_data
+#         ### :insert_last ###
+#         debug 'µ77785-3', d, terminate_now or not has_ended
+#         break if terminate_now or not has_ended
+#       ### :source_iterator ###
+#       debug 'µ77785-4', d, terminate_now
+#       break if terminate_now
+#     #.......................................................................................................
+#     ### :main_iterator ###
+#     break if terminate_now
+#   #.........................................................................................................
+#   on_end() if on_end?
+#   return null
 
 
 #===========================================================================================================
