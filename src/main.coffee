@@ -96,29 +96,39 @@ remit_defaults  =
     throw new Error "µ55663 illegal to call send() after method has returned" if has_returned
     send d
   #.........................................................................................................
-  R = ( d, send_ ) =>
-    # debug 'µ55641', d, d is @symbols.last
-    send          = send_
-    has_returned  = false
-    #.......................................................................................................
-    if send_last and d is @symbols.last
-      method data_last, tsend
-    #.......................................................................................................
-    else
-      if is_first then ( ( method data_first,   tsend ) if send_first   )
-      else             ( ( method data_between, tsend ) if send_between )
-      ( method data_before, tsend ) if send_before
-      is_first = false
-      #.....................................................................................................
-      # When leapfrogging is being called for, only call method if the jumper returns false:
-      if ( not do_leapfrog ) or ( not settings.leapfrog d ) then  method d, tsend
-      else                                                        send d
-      #.....................................................................................................
-      ( method data_after, tsend ) if send_after
-    has_returned = true
-    return null
-  #.........................................................................................................
-  R[ @symbols.send_last ] = true if send_last
+  unless settings._surround
+    ### fast track without surround features ###
+    R = ( d, send_ ) =>
+      send          = send_
+      has_returned  = false
+      method d, tsend
+      has_returned = true
+      return null
+  else
+    ### slow track with surround features ###
+    R = ( d, send_ ) =>
+      # debug 'µ55641', d, d is @symbols.last
+      send          = send_
+      has_returned  = false
+      #.......................................................................................................
+      if send_last and d is @symbols.last
+        method data_last, tsend
+      #.......................................................................................................
+      else
+        if is_first then ( ( method data_first,   tsend ) if send_first   )
+        else             ( ( method data_between, tsend ) if send_between )
+        ( method data_before, tsend ) if send_before
+        is_first = false
+        #.....................................................................................................
+        # When leapfrogging is being called for, only call method if the jumper returns false:
+        if ( not do_leapfrog ) or ( not settings.leapfrog d ) then  method d, tsend
+        else                                                        send d
+        #.....................................................................................................
+        ( method data_after, tsend ) if send_after
+      has_returned = true
+      return null
+    #.........................................................................................................
+    R[ @symbols.send_last ] = true if send_last
   return R
 
 
