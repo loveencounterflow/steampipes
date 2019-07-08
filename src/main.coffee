@@ -32,12 +32,13 @@ types                     = require './_types'
 #
 #-----------------------------------------------------------------------------------------------------------
 @symbols =
-  sink:       Symbol 'sink'       # Marks a sink (only used by `$drain()`)
-  last:       Symbol 'last'       # May be used to signal last  data item
-  first:      Symbol 'first'      # May be used to signal first data item
-  end:        Symbol 'end'        # Request stream to terminate
-  misfit:     Symbol 'misfit'     # Bottom value
-  send_last:  Symbol 'send_last'  # Request to get called once more after has ended
+  sink:             Symbol 'sink'             # Marks a sink (only used by `$drain()`)
+  last:             Symbol 'last'             # May be used to signal last  data item
+  first:            Symbol 'first'            # May be used to signal first data item
+  end:              Symbol 'end'              # Request stream to terminate
+  misfit:           Symbol 'misfit'           # Bottom value
+  send_last:        Symbol 'send_last'        # Request to get called once more after has ended
+  push_source_mark: Symbol 'push_source_mark' # Used to identify a push source; needed by `pull()`
 
 #-----------------------------------------------------------------------------------------------------------
 remit_defaults  =
