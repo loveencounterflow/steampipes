@@ -33,8 +33,7 @@ misfit                    = Symbol 'misfit'
 #
 #-----------------------------------------------------------------------------------------------------------
 @signals =
-  # first:            Symbol 'first'            # May be used to signal first data item
-  last:             Symbol 'last'             # May be used to signal last  data item
+  last:             Symbol 'last'             # Used to signal last data item
   end:              Symbol 'end'              # Request stream to terminate
 @marks =
   sink:             Symbol 'sink'             # Marks a sink (only used by `$drain()`)

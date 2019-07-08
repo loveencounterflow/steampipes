@@ -686,9 +686,9 @@ jr                        = JSON.stringify
 
 ############################################################################################################
 unless module.parent?
-  test @, 'timeout': 30000
+  # test @, 'timeout': 30000
   # test @[ "remit"                           ]
-  # test @[ "remit with end detection 1"      ]
+  test @[ "remit with end detection 1"      ]
   # test @[ "remit with end detection 2"      ]
   # test @[ "remit with surrounds" ]
   # test @[ "watch with end detection 1"      ]
