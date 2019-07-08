@@ -26,16 +26,16 @@ types                     = require './_types'
   last_of
   size_of
   type_of }               = types
+misfit                    = Symbol 'misfit'
 
 
 #===========================================================================================================
 #
 #-----------------------------------------------------------------------------------------------------------
-@symbols =
+@signals =
   last:             Symbol 'last'             # May be used to signal last  data item
   first:            Symbol 'first'            # May be used to signal first data item
   end:              Symbol 'end'              # Request stream to terminate
-  misfit:           Symbol 'misfit'           # Bottom value
 @marks =
   sink:             Symbol 'sink'             # Marks a sink (only used by `$drain()`)
   send_last:        Symbol 'send_last'        # Request to get called once more after has ended
@@ -43,11 +43,11 @@ types                     = require './_types'
 
 #-----------------------------------------------------------------------------------------------------------
 remit_defaults  =
-  first:    @symbols.misfit
-  last:     @symbols.misfit
-  between:  @symbols.misfit
-  after:    @symbols.misfit
-  before:   @symbols.misfit
+  first:    misfit
+  last:     misfit
+  between:  misfit
+  after:    misfit
+  before:   misfit
 
 
 #===========================================================================================================
@@ -64,11 +64,11 @@ remit_defaults  =
   if settings?
     validate.function settings.leapfrog if settings.leapfrog?
     settings._surround = \
-      ( settings.first    isnt @symbols.misfit ) or \
-      ( settings.last     isnt @symbols.misfit ) or \
-      ( settings.between  isnt @symbols.misfit ) or \
-      ( settings.after    isnt @symbols.misfit ) or \
-      ( settings.before   isnt @symbols.misfit )
+      ( settings.first    isnt misfit ) or \
+      ( settings.last     isnt misfit ) or \
+      ( settings.between  isnt misfit ) or \
+      ( settings.after    isnt misfit ) or \
+      ( settings.before   isnt misfit )
   #.........................................................................................................
   return { settings, method, }
 
@@ -99,22 +99,22 @@ remit_defaults  =
   data_between          = settings.between
   data_after            = settings.after
   data_last             = settings.last
-  send_first            = data_first    isnt @symbols.misfit
-  send_before           = data_before   isnt @symbols.misfit
-  send_between          = data_between  isnt @symbols.misfit
-  send_after            = data_after    isnt @symbols.misfit
-  send_last             = data_last     isnt @symbols.misfit
+  send_first            = data_first    isnt misfit
+  send_before           = data_before   isnt misfit
+  send_between          = data_between  isnt misfit
+  send_after            = data_after    isnt misfit
+  send_last             = data_last     isnt misfit
   on_end                = null
   is_first              = true
   ME                    = @
   #.........................................................................................................
   ### slow track with surround features ###
   R = ( d, send_ ) =>
-    # debug 'µ55641', d, d is @symbols.last
+    # debug 'µ55641', d, d is @signals.last
     send          = send_
     has_returned  = false
     #.......................................................................................................
-    if send_last and d is @symbols.last
+    if send_last and d is @signals.last
       method data_last, tsend
     #.......................................................................................................
     else
@@ -229,10 +229,10 @@ $watch = ( settings, method ) ->
   mem_sources     = [ mem_source, ( [] for _ in [ 0 ... transforms.length ] )..., ]
   local_sink      = null
   local_source    = null
-  last            = @symbols.last
+  last            = @signals.last
   #.........................................................................................................
   send = ( d ) =>
-    return R.has_ended = true if d is @symbols.end
+    return R.has_ended = true if d is @signals.end
     local_sink.push d
   send.end = => R.has_ended = true
   #.........................................................................................................
@@ -261,11 +261,11 @@ $watch = ( settings, method ) ->
   #.........................................................................................................
   for d from S.original_source
     break if S.has_ended
-    # continue if d is @symbols.discard
+    # continue if d is @signals.discard
     S.mem_source.push d
     S.exhaust_pipeline()
   #.........................................................................................................
-  S.mem_source.push @symbols.last
+  S.mem_source.push @signals.last
   S.exhaust_pipeline()
   S.on_end() if S.on_end?
   return null
@@ -284,7 +284,7 @@ $watch = ( settings, method ) ->
       if buffer.length > 0
         yield buffer.shift()
   R.send  = ( d ) => buffer.push d
-  R.end   = => R.send @symbols.end
+  R.end   = => R.send @signals.end
   R = { [@marks.push_source], }
   return R
 
@@ -296,7 +296,7 @@ $watch = ( settings, method ) ->
     S.exhaust_pipeline()
     return null
   end = =>
-    S.mem_source.push @symbols.last
+    S.mem_source.push @signals.last
     S.exhaust_pipeline()
     S.on_end() if S.on_end?
     S = null
