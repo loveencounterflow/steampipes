@@ -282,27 +282,27 @@ jr                        = JSON.stringify
   done()
   return null
 
-# #-----------------------------------------------------------------------------------------------------------
-# @[ "end push source (1)" ] = ( T, done ) ->
-#   # The proper way to end a push source is to call `source.end()`.
-#   [ probe, matcher, error, ] = [["what","a","lot","of","little","bottles"],["what","a","lot","of","little","bottles"],null]
-#   await T.perform probe, matcher, error, -> return new Promise ( resolve, reject ) ->
-#     R         = []
-#     source    = SP.new_push_source()
-#     pipeline  = []
-#     pipeline.push source
-#     pipeline.push SP.$watch ( d ) -> info xrpr d
-#     pipeline.push SP.$collect { collector: R, }
-#     pipeline.push SP.$watch ( d ) -> info xrpr d
-#     pipeline.push SP.$drain -> help 'ok'; resolve R
-#     pull pipeline...
-#     for word in probe
-#       source.send word
-#     source.end()
-#     return null
-#   #.........................................................................................................
-#   done()
-#   return null
+#-----------------------------------------------------------------------------------------------------------
+@[ "end push source (1)" ] = ( T, done ) ->
+  # The proper way to end a push source is to call `source.end()`.
+  [ probe, matcher, error, ] = [["what","a","lot","of","little","bottles"],["what","a","lot","of","little","bottles"],null]
+  await T.perform probe, matcher, error, -> return new Promise ( resolve, reject ) ->
+    R         = []
+    source    = SP.new_push_source()
+    pipeline  = []
+    pipeline.push source
+    pipeline.push SP.$watch ( d ) -> info xrpr d
+    pipeline.push SP.$collect { collector: R, }
+    pipeline.push SP.$watch ( d ) -> info xrpr d
+    pipeline.push SP.$drain -> help 'ok'; resolve R
+    SP.pull pipeline...
+    for word in probe
+      source.send word
+    source.end()
+    return null
+  #.........................................................................................................
+  done()
+  return null
 
 ###
 
