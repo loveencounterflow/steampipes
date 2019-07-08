@@ -229,13 +229,11 @@ $watch = ( settings, method ) ->
   local_sink      = null
   local_source    = null
   last            = @symbols.last
-  has_ended       = false
-  # terminate_now   = false
   #.........................................................................................................
   send = ( d ) =>
-    return has_ended = true if d is @symbols.end
+    return R.has_ended = true if d is @symbols.end
     local_sink.push d
-  send.end = => has_ended = true
+  send.end = => R.has_ended = true
   #.........................................................................................................
   exhaust_pipeline = =>
     loop
@@ -253,14 +251,22 @@ $watch = ( settings, method ) ->
       break unless has_data
     return null
   #.........................................................................................................
-  for d from original_source
-    break if has_ended
-    mem_source.push d
-    exhaust_pipeline()
+  R = { mem_source, original_source, send, exhaust_pipeline, on_end, has_ended: false, }
+  return R
+
+#-----------------------------------------------------------------------------------------------------------
+@pull = ( transforms... ) ->
+  S = @_pull transforms...
   #.........................................................................................................
-  mem_source.push last
-  exhaust_pipeline()
-  on_end() if on_end?
+  for d from S.original_source
+    break if S.has_ended
+    # continue if d is @symbols.discard
+    S.mem_source.push d
+    S.exhaust_pipeline()
+  #.........................................................................................................
+  S.mem_source.push @symbols.last
+  S.exhaust_pipeline()
+  S.on_end() if S.on_end?
   return null
 
 
