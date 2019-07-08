@@ -33,7 +33,7 @@ misfit                    = Symbol 'misfit'
 #
 #-----------------------------------------------------------------------------------------------------------
 @signals =
-  first:            Symbol 'first'            # May be used to signal first data item
+  # first:            Symbol 'first'            # May be used to signal first data item
   last:             Symbol 'last'             # May be used to signal last  data item
   end:              Symbol 'end'              # Request stream to terminate
 @marks =
