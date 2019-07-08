@@ -37,8 +37,9 @@ types                     = require './_types'
   first:            Symbol 'first'            # May be used to signal first data item
   end:              Symbol 'end'              # Request stream to terminate
   misfit:           Symbol 'misfit'           # Bottom value
+@marks =
   send_last:        Symbol 'send_last'        # Request to get called once more after has ended
-  push_source_mark: Symbol 'push_source_mark' # Used to identify a push source; needed by `pull()`
+  push_source:      Symbol 'push_source'      # Used to identify a push source; needed by `pull()`
 
 #-----------------------------------------------------------------------------------------------------------
 remit_defaults  =
@@ -130,7 +131,7 @@ remit_defaults  =
     has_returned = true
     return null
   #.........................................................................................................
-  R[ @symbols.send_last ] = true if send_last
+  R[ @marks.send_last ] = true if send_last
   return R
 
 
@@ -244,7 +245,7 @@ $watch = ( settings, method ) ->
         local_sink    = mem_sources[ idx + 1 ]
         d             = local_source.shift()
         if d is last
-          transform d, send if transform[ @symbols.send_last ]?
+          transform d, send if transform[ @marks.send_last ]?
           send last
         else
           transform d, send
@@ -284,7 +285,7 @@ $watch = ( settings, method ) ->
         yield buffer.shift()
   R.send  = ( d ) => buffer.push d
   R.end   = => R.send @symbols.end
-  R = { [ @symbols.push_source_mark ], }
+  R = { [ @marks.push_source ], }
   return R
 
 #-----------------------------------------------------------------------------------------------------------
