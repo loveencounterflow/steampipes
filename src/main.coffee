@@ -275,6 +275,44 @@ $watch = ( settings, method ) ->
 #-----------------------------------------------------------------------------------------------------------
 @new_value_source = ( x ) -> yield from x
 
+#-----------------------------------------------------------------------------------------------------------
+@new_push_source = ->
+  buffer  = []
+  R       = do ->
+    loop
+      if buffer.length > 0
+        yield buffer.shift()
+  R.send  = ( d ) => buffer.push d
+  R.end   = => R.send @symbols.end
+  R = { [ @symbols.push_source_mark ], }
+  return R
+
+#-----------------------------------------------------------------------------------------------------------
+@push = ( transforms... ) ->
+  S = @_pull transforms...
+  send = ( d ) =>
+    S.mem_source.push d
+    S.exhaust_pipeline()
+    return null
+  end = =>
+    S.mem_source.push @symbols.last
+    S.exhaust_pipeline()
+    S.on_end() if S.on_end?
+    S = null
+    return null
+  return { send, end, }
+
+
+#===========================================================================================================
+#
+#-----------------------------------------------------------------------------------------------------------
+@$collect = ( settings ) ->
+  collector = settings?.collector ? []
+  last      = Symbol 'last'
+  return @$ { last, }, ( d, send ) =>
+    if d is last then return send collector
+    collector.push d
+    return null
 
 
 
