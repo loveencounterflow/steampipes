@@ -32,12 +32,12 @@ types                     = require './_types'
 #
 #-----------------------------------------------------------------------------------------------------------
 @symbols =
-  sink:             Symbol 'sink'             # Marks a sink (only used by `$drain()`)
   last:             Symbol 'last'             # May be used to signal last  data item
   first:            Symbol 'first'            # May be used to signal first data item
   end:              Symbol 'end'              # Request stream to terminate
   misfit:           Symbol 'misfit'           # Bottom value
 @marks =
+  sink:             Symbol 'sink'             # Marks a sink (only used by `$drain()`)
   send_last:        Symbol 'send_last'        # Request to get called once more after has ended
   push_source:      Symbol 'push_source'      # Used to identify a push source; needed by `pull()`
 
@@ -137,7 +137,7 @@ remit_defaults  =
 
 #-----------------------------------------------------------------------------------------------------------
 @$map   = ( method ) -> ( d, send ) => send method d
-@$drain = ( on_end = null ) -> { [@symbols.sink], on_end, }
+@$drain = ( on_end = null ) -> { [@marks.sink], on_end, }
 @$pass  = -> ( d, send ) => send d
 
 #-----------------------------------------------------------------------------------------------------------
@@ -190,7 +190,7 @@ $watch = ( settings, method ) ->
   switch type = type_of transform
     when 'function'           then return { type: 'through', }
     when 'generatorfunction'  then return { type: 'source', must_call: true, }
-  return { type: 'sink', on_end: transform.on_end, } if transform[ @symbols.sink ]?
+  return { type: 'sink', on_end: transform.on_end, } if transform[ @marks.sink ]?
   throw new Error "µ44521 expected an iterable, a function, a generator function or a sink, got a #{type}"
 
 #-----------------------------------------------------------------------------------------------------------
@@ -285,7 +285,7 @@ $watch = ( settings, method ) ->
         yield buffer.shift()
   R.send  = ( d ) => buffer.push d
   R.end   = => R.send @symbols.end
-  R = { [ @marks.push_source ], }
+  R = { [@marks.push_source], }
   return R
 
 #-----------------------------------------------------------------------------------------------------------
