@@ -285,7 +285,6 @@ $watch = ( settings, method ) ->
 #-----------------------------------------------------------------------------------------------------------
 @new_value_source = ( x ) -> yield from x
 
-
 #-----------------------------------------------------------------------------------------------------------
 @new_push_source = ->
   send = ( d ) =>
@@ -300,7 +299,7 @@ $watch = ( settings, method ) ->
     R.blurb.exhaust_pipeline()
     R.blurb.on_end() if R.blurb.on_end?
     return R.blurb = null
-  R       = { [@marks.push_source], send, end, buffer: [], blurb: null, }
+  R = { [@marks.push_source], send, end, buffer: [], blurb: null, }
   return R
 
 
