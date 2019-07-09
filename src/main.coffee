@@ -199,7 +199,7 @@ $watch = ( settings, method ) ->
   throw new Error "µ44521 expected an iterable, a function, a generator function or a sink, got a #{type}"
 
 #-----------------------------------------------------------------------------------------------------------
-@_classify_pipeline = ( transforms ) ->
+@_duct_from_transforms = ( transforms ) ->
   ### TAINT test for, complain about illegal combinations of sources, sinks ###
   return { empty: true, } if transforms.length is 0
   R       = { [@marks.isa_duct], length: transforms.length, transforms, }
@@ -209,7 +209,7 @@ $watch = ( settings, method ) ->
 
 #-----------------------------------------------------------------------------------------------------------
 @_pull = ( transforms... ) ->
-  duct            = @_classify_pipeline transforms
+  duct            = @_duct_from_transforms transforms
   has_sink        = false
   has_source      = false
   on_end          = null
