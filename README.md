@@ -24,18 +24,19 @@ equivalent to the sole transform.
 
 **Duct Configurations:**
 
-* `[]` ⇨ `{ is_empty: true, }`
-* `[x]` ⇨ `{ is_single: true, }`
-* `[source——transforms*]`
-* `[transforms*——sink]`
-* `[source—transforms*—sink]`
+* `[]                                 ⇨ { is_empty:     true, }`
+* `[ x, ]                             ⇨ { is_single:    true, }`
+* `[ source, transforms..., ]         ⇨ { is_source:    true, }`
+* `[ transforms..., sink, ]           ⇨ { is_sink:      true, }`
+* `[ transforms..., ]                 ⇨ { is_through:   true, }`
+* `[ source, transforms..., sink, ]   ⇨ { is_complete:  true, }`
 
 ### Behavior for Ending Streams
 
 Two ways to end a stream from inside a transform: either
 
-1)	call `send.end()`, or
-2)	`send SP.symbols.end`.
+1)  call `send.end()`, or
+2)  `send SP.symbols.end`.
 
 The two methods are 100% identical. In SteamPipes, 'ending a stream' means 'to break from the loop that
 iterates over the data source'.
@@ -61,14 +62,14 @@ symbolic value:
 pipeline = []
 ...
 pipeline.push $ ( d, send ) ->
-	...
-	throw 'OHNOES!'
-	...
+  ...
+  throw 'OHNOES!'
+  ...
 ...
 try
-	pull pipeline...
+  pull pipeline...
 catch error
-	throw error if error isnt 'OHNOES!'
-	warn "the stream was aborted"
+  throw error if error isnt 'OHNOES!'
+  warn "the stream was aborted"
 ...
 ```
