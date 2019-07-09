@@ -210,7 +210,7 @@ $watch = ( settings, method ) ->
   has_source      = false
   on_end          = null
   original_source = null
-  debug 'µ44433', duct
+  # debug 'µ44433', duct
   throw new Error "µ77764 source as last transform not yet supported" if duct.last.type  is 'source'
   throw new Error "µ77765 sink as first transform not yet supported"  if duct.first.type is 'sink'
   #.........................................................................................................
