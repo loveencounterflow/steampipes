@@ -39,7 +39,7 @@ equivalent to the sole transform.
 
 *III. Complete Ducts*
 ```coffee
-⋆ [ source, transforms..., sink,  ]   ⇨ { type:      'circuit',  } # Complete, `pull()` will start throughput
+⋆ [ source, transforms..., sink,  ]   ⇨ { type:      'circuit',  } # ready to run
 ```
 
 ### Behavior for Ending Streams
