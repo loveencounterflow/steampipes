@@ -36,10 +36,10 @@ misfit                    = Symbol 'misfit'
   last:             Symbol 'last'             # Used to signal last data item
   end:              Symbol 'end'              # Request stream to terminate
 @marks =
-  sink:             Symbol 'sink'             # Marks a sink (only used by `$drain()`)
-  isa_duct:         Symbol 'isa_duct'         # Marks a duct
+  isa_sink:         Symbol 'isa_sink'         # Marks a sink as such
+  isa_duct:         Symbol 'isa_duct'         # Marks a duct as such
+  isa_pusher:       Symbol 'isa_pusher'       # Marks a push source as such
   send_last:        Symbol 'send_last'        # Request to get called once more after has ended
-  push_source:      Symbol 'push_source'      # Used to identify a push source; needed by `pull()`
 
 #-----------------------------------------------------------------------------------------------------------
 remit_defaults  =
@@ -131,13 +131,13 @@ remit_defaults  =
     has_returned = true
     return null
   #.........................................................................................................
-  R[ @marks.send_last ] = true if send_last
+  R[ @marks.send_last ] = @marks.send_last if send_last
   return R
 
 
 #-----------------------------------------------------------------------------------------------------------
 @$map   = ( method ) -> ( d, send ) => send method d
-@$drain = ( on_end = null ) -> { [@marks.sink], on_end, }
+@$drain = ( on_end = null ) -> { [@marks.isa_sink], on_end, }
 @$pass  = -> ( d, send ) => send d
 
 #-----------------------------------------------------------------------------------------------------------
@@ -186,12 +186,12 @@ $watch = ( settings, method ) ->
 
 #-----------------------------------------------------------------------------------------------------------
 @_classify_transform = ( transform ) ->
-  return { type: 'source', subtype: is_push: true,  } if transform[ @marks.push_source  ]?
+  return { type: 'source', subtype: is_push: true,  } if transform[ @marks.isa_pusher  ]?
   return { type: 'source',                          } if transform[ Symbol.iterator     ]?
   switch type = type_of transform
     when 'function'           then return { type: 'through', }
     when 'generatorfunction'  then return { type: 'source', must_call: true, }
-  return { type: 'sink', on_end: transform.on_end, } if transform[ @marks.sink ]?
+  return { type: 'sink', on_end: transform.on_end, } if transform[ @marks.isa_sink ]?
   throw new Error "µ44521 expected an iterable, a function, a generator function or a sink, got a #{type}"
 
 #-----------------------------------------------------------------------------------------------------------
@@ -260,7 +260,7 @@ $watch = ( settings, method ) ->
 #-----------------------------------------------------------------------------------------------------------
 @pull = ( transforms... ) ->
   duct = @_pull transforms...
-  return @_push duct if duct.original_source[ @marks.push_source ]?
+  return @_push duct if duct.original_source[ @marks.isa_pusher ]?
   #.........................................................................................................
   for d from duct.original_source
     break if duct.has_ended
@@ -300,7 +300,7 @@ $watch = ( settings, method ) ->
     R.duct.exhaust_pipeline()
     R.duct.on_end() if R.duct.on_end?
     return R.duct = null
-  R = { [@marks.push_source], send, end, buffer: [], duct: null, }
+  R = { [@marks.isa_pusher], send, end, buffer: [], duct: null, }
   return R
 
 
