@@ -197,18 +197,19 @@ $watch = ( settings, method ) ->
 @_classify_pipeline = ( transforms ) ->
   ### TAINT test for, complain about illegal combinations of sources, sinks ###
   return { empty: true, } if transforms.length is 0
-  R       = { length: transforms.length, }
+  R       = { length: transforms.length, transforms, }
   R.first = @_classify_transform first_of transforms
   R.last  = @_classify_transform last_of  transforms
   return R
 
 #-----------------------------------------------------------------------------------------------------------
 @_pull = ( transforms... ) ->
-  blurb     = @_classify_pipeline transforms
+  blurb           = @_classify_pipeline transforms
   has_sink        = false
   has_source      = false
   on_end          = null
   original_source = null
+  debug 'µ44433', blurb
   throw new Error "µ77764 source as last transform not yet supported" if blurb.last.type  is 'source'
   throw new Error "µ77765 sink as first transform not yet supported"  if blurb.first.type is 'sink'
   #.........................................................................................................
