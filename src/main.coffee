@@ -192,21 +192,43 @@ $watch = ( settings, method ) ->
 
 #-----------------------------------------------------------------------------------------------------------
 @_classify_transform = ( transform ) ->
-  return { type: 'source', subtype: is_push: true,  } if transform[ @marks.isa_pusher ]?
-  return { type: 'source',                          } if transform[ Symbol.iterator   ]?
-  switch type = type_of transform
-    when 'function'           then return { type: 'through', }
-    when 'generatorfunction'  then return { type: 'source', must_call: true, }
-  return { type: 'sink', on_end: transform.on_end, } if transform[ @marks.isa_sink ]?
-  throw new Error "µ44521 expected an iterable, a function, a generator function or a sink, got a #{type}"
+  R = do =>
+    return { type: 'source', isa_pusher: true,  } if transform[ @marks.isa_pusher ]?
+    return { type: 'source',                    } if transform[ Symbol.iterator   ]?
+    switch type = type_of transform
+      when 'function'           then return { type: 'through', }
+      when 'generatorfunction'  then return { type: 'source', must_call: true, }
+    return { type: 'sink', on_end: transform.on_end, } if transform[ @marks.isa_sink ]?
+    throw new Error "µ44521 expected an iterable, a function, a generator function or a sink, got a #{type}"
+  switch R.type
+    when 'source'   then  transform[ @marks.isa_source  ] ?= @marks.isa_source
+    when 'through'  then  transform[ @marks.isa_through ] ?= @marks.isa_through
+    when 'sink'     then  transform[ @marks.isa_sink    ] ?= @marks.isa_sink
+  return R
 
 #-----------------------------------------------------------------------------------------------------------
 @_duct_from_transforms = ( transforms ) ->
   ### TAINT test for, complain about illegal combinations of sources, sinks ###
-  return { empty: true, } if transforms.length is 0
-  R       = { [@marks.isa_duct], length: transforms.length, transforms, }
-  R.first = @_classify_transform first_of transforms
-  R.last  = @_classify_transform last_of  transforms
+  R       = { [@marks.isa_duct], transforms, }
+  blurbs  = ( @_classify_transform transform for transform in transforms )
+  return { R..., is_empty: true, } if transforms.length is 0
+  #.........................................................................................................
+  R.first = blurbs[ 0 ]
+  if transforms.length is 1
+    R.is_single   = true
+    R.last        = R.first
+    R.type        = R.first.type
+  else
+    R.last        = blurbs[ transforms.length - 1 ]
+    switch key = "#{R.first.type}/#{R.last.type}"
+      when 'source/through'   then R.type = 'source'
+      when 'through/sink'     then R.type = 'sink'
+      when 'through/through'  then R.type = 'through'
+      when 'source/sink'      then R.type = 'circuit'
+      else throw new Error "µ44521 illegal duct configuration #{rpr key}"
+    for idx in [ 1 ... blurbs.length - 1 ] by +1
+      unless ( b = blurbs[ idx ] ).type is 'through'
+        throw new Error "µ44522 illegal duct configuration at transform index #{idx}: #{rpr b}"
   return R
 
 #-----------------------------------------------------------------------------------------------------------

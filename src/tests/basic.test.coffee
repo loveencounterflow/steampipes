@@ -304,6 +304,73 @@ jr                        = JSON.stringify
   done()
   return null
 
+#-----------------------------------------------------------------------------------------------------------
+@[ "duct_from_transforms" ] = ( T, done ) ->
+  do =>
+    r = SP._duct_from_transforms []
+    T.eq r[ SP.marks.isa_duct ],                      SP.marks.isa_duct
+    T.eq r.is_empty,                                  true
+    T.eq r.is_single ? false,                         false
+    T.eq r.first,                                     undefined
+    T.eq r.last,                                      undefined
+    T.eq r.transforms,                                []
+    T.eq r.type,                                      undefined
+  #.........................................................................................................
+  do =>
+    r = SP._duct_from_transforms [ source = SP.new_push_source() ]
+    T.eq r[ SP.marks.isa_duct ],                      SP.marks.isa_duct
+    T.eq r.first,                                     r.last
+    T.eq r.is_empty ? false,                          false
+    T.eq r.is_single,                                 true
+    T.eq r.transforms.length,                         1
+    T.eq r.first.type,                                'source'
+    T.eq r.type,                                      'source'
+    T.eq r.first.isa_pusher ? false,                  true
+    T.eq r.transforms[ 0 ][ SP.marks.isa_source ],    SP.marks.isa_source
+  #.........................................................................................................
+  do =>
+    r = SP._duct_from_transforms [ sink = SP.$drain on_end = ( -> ) ]
+    T.eq r.first,                                     r.last
+    T.eq r.is_single,                                 true
+    T.eq r.first.type,                                'sink'
+    T.eq r.type,                                      'sink'
+    T.eq r.last.on_end,                               on_end
+    T.eq r.transforms[ 0 ][ SP.marks.isa_sink ],      SP.marks.isa_sink
+  #.........................................................................................................
+  do =>
+    r = SP._duct_from_transforms [ through = SP.$ ( ( d, send ) -> ) ]
+    T.eq r.first,                                     r.last
+    T.eq r.is_single,                                 true
+    T.eq r.first.type,                                'through'
+    T.eq r.type,                                      'through'
+    T.eq r.transforms[ 0 ],                           through
+    T.eq r.transforms[ 0 ][ SP.marks.isa_through ],   SP.marks.isa_through
+  #.........................................................................................................
+  do =>
+    r = SP._duct_from_transforms [ ( SP.new_value_source [] ), ( SP.$ ( d, send ) -> ), ]
+    T.eq r.is_empty ? false,                          false
+    T.eq r.is_single ? false,                         false
+    T.eq r.first.type,                                'source'
+    T.eq r.type,                                      'source'
+    T.eq r.transforms[ 0 ][ SP.marks.isa_source ],    SP.marks.isa_source
+  #.........................................................................................................
+  do =>
+    f = -> SP._duct_from_transforms [
+      ( SP.new_value_source []  )
+      ( SP.new_value_source []  )
+      ( SP.$ ( d, send ) ->     ) ]
+    T.throws /illegal duct configuration/, f
+  #.........................................................................................................
+  do =>
+    r = SP._duct_from_transforms [
+      ( SP.new_value_source []  )
+      ( SP.$ ( d, send ) ->     )
+      ( SP.$drain()             ) ]
+    T.eq r.type,                                      'circuit'
+  #.........................................................................................................
+  done()
+  return null
+
 # #-----------------------------------------------------------------------------------------------------------
 # @[ "composability" ] = ( T, done ) ->
 #   [ probe, matcher, error, ] = [["what","a","lot","of","little","bottles"],["what","a","lot","of","little","bottles"],null]
@@ -709,9 +776,10 @@ jr                        = JSON.stringify
 
 ############################################################################################################
 unless module.parent?
-  test @, 'timeout': 30000
+  # test @, 'timeout': 30000
   # test @[ "remit"                           ]
   # test @[ "remit with end detection 1"      ]
+  test @[ "duct_from_transforms"            ]
   # test @[ "composability"                   ]
   # test @[ "remit with end detection 2"      ]
   # test @[ "remit with surrounds" ]
