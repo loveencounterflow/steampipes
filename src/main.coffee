@@ -204,23 +204,23 @@ $watch = ( settings, method ) ->
 
 #-----------------------------------------------------------------------------------------------------------
 @_pull = ( transforms... ) ->
-  blurb           = @_classify_pipeline transforms
+  duct            = @_classify_pipeline transforms
   has_sink        = false
   has_source      = false
   on_end          = null
   original_source = null
-  debug 'µ44433', blurb
-  throw new Error "µ77764 source as last transform not yet supported" if blurb.last.type  is 'source'
-  throw new Error "µ77765 sink as first transform not yet supported"  if blurb.first.type is 'sink'
+  debug 'µ44433', duct
+  throw new Error "µ77764 source as last transform not yet supported" if duct.last.type  is 'source'
+  throw new Error "µ77765 sink as first transform not yet supported"  if duct.first.type is 'sink'
   #.........................................................................................................
-  if blurb.first.type is 'source'
+  if duct.first.type is 'source'
     original_source = transforms.shift()
-    original_source = original_source() if blurb.first.must_call
+    original_source = original_source() if duct.first.must_call
     has_source      = true
   #.........................................................................................................
-  if blurb.last.type is 'sink'
+  if duct.last.type is 'sink'
     has_sink  = true
-    on_end    = blurb.last.on_end
+    on_end    = duct.last.on_end
     transforms.pop()
   #.........................................................................................................
   ### TAINT shouldn't return null here; return pipeline? ###
@@ -258,25 +258,25 @@ $watch = ( settings, method ) ->
 
 #-----------------------------------------------------------------------------------------------------------
 @pull = ( transforms... ) ->
-  blurb = @_pull transforms...
-  return @_push blurb if blurb.original_source[ @marks.push_source ]?
+  duct = @_pull transforms...
+  return @_push duct if duct.original_source[ @marks.push_source ]?
   #.........................................................................................................
-  for d from blurb.original_source
-    break if blurb.has_ended
+  for d from duct.original_source
+    break if duct.has_ended
     # continue if d is @signals.discard
-    blurb.mem_source.push d
-    blurb.exhaust_pipeline()
+    duct.mem_source.push d
+    duct.exhaust_pipeline()
   #.........................................................................................................
-  blurb.mem_source.push @signals.last
-  blurb.exhaust_pipeline()
-  blurb.on_end() if blurb.on_end?
+  duct.mem_source.push @signals.last
+  duct.exhaust_pipeline()
+  duct.on_end() if duct.on_end?
   return null
 
 #-----------------------------------------------------------------------------------------------------------
-@_push = ( blurb ) ->
-  blurb.original_source.blurb = blurb
-  blurb.mem_source.splice blurb.mem_source.length, 0, blurb.original_source.buffer...
-  blurb.exhaust_pipeline()
+@_push = ( duct ) ->
+  duct.original_source.duct = duct
+  duct.mem_source.splice duct.mem_source.length, 0, duct.original_source.buffer...
+  duct.exhaust_pipeline()
   return null
 
 
@@ -288,18 +288,18 @@ $watch = ( settings, method ) ->
 #-----------------------------------------------------------------------------------------------------------
 @new_push_source = ->
   send = ( d ) =>
-    return R.buffer.push d unless R.blurb?
+    return R.buffer.push d unless R.duct?
     R.buffer = null
     return end() if d is @signals.end
-    R.blurb.mem_source.push d
-    R.blurb.exhaust_pipeline()
+    R.duct.mem_source.push d
+    R.duct.exhaust_pipeline()
     return null
   end = =>
-    R.blurb.mem_source.push @signals.last
-    R.blurb.exhaust_pipeline()
-    R.blurb.on_end() if R.blurb.on_end?
-    return R.blurb = null
-  R = { [@marks.push_source], send, end, buffer: [], blurb: null, }
+    R.duct.mem_source.push @signals.last
+    R.duct.exhaust_pipeline()
+    R.duct.on_end() if R.duct.on_end?
+    return R.duct = null
+  R = { [@marks.push_source], send, end, buffer: [], duct: null, }
   return R
 
 
