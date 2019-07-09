@@ -33,20 +33,20 @@ misfit                    = Symbol 'misfit'
 #
 #-----------------------------------------------------------------------------------------------------------
 ### Signals are special values that, when sent down the pipeline, may alter behavior: ###
-@signals =
+@signals = Object.freeze
   last:             Symbol 'last'             # Used to signal last data item
   end:              Symbol 'end'              # Request stream to terminate
 
 #-----------------------------------------------------------------------------------------------------------
 ### Marks are special values that identify types, behavior of pipeline elements etc: ###
-@marks =
+@marks = Object.freeze
   isa_sink:         Symbol 'isa_sink'         # Marks a sink as such
   isa_duct:         Symbol 'isa_duct'         # Marks a duct as such
   isa_pusher:       Symbol 'isa_pusher'       # Marks a push source as such
   send_last:        Symbol 'send_last'        # Marks transforms expecting a certain value before EOS
 
 #-----------------------------------------------------------------------------------------------------------
-remit_defaults  =
+remit_defaults = Object.freeze
   first:    misfit
   last:     misfit
   between:  misfit
