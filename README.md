@@ -38,8 +38,11 @@ switched to [pull-streams](https://pull-stream.github.io).
 
 **I. Special Arities**
 
-Two special arities: `empty` and `single`. `empty` is always a no-op, hence discardable; `single` always
-equivalent to the sole transform.
+There are two special duct arities, empty and single. An empty pipeline producers a duct marked with
+`is_empty: true`; it is always a no-op, hence discardable. The duct does not have a `type` property.
+
+A pipeline with a single element produces a duct with the property `is_single: true`; it is always
+equivalent to its sole transform, and its `type` property is that of its sole element.
 
 ```coffee
 ⋆ []                                  ⇨ { is_empty:  true,       } # equiv. to a no-op
