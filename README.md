@@ -19,25 +19,38 @@ switched to [pull-streams](https://pull-stream.github.io).
 
 ### Ducts
 
+
+#### Duct Configurations
+
+**I. Special Arities**
+
 Two special arities: `empty` and `single`. `empty` is always a no-op, hence discardable; `single` always
 equivalent to the sole transform.
 
-**Duct Configurations:**
-
-**I. Special Arities**
 ```coffee
 ⋆ []                                  ⇨ { is_empty:  true,       } # equiv. to a no-op
 ⋆ [ x, ]                              ⇨ { is_single: true,       } # equiv. to its single member
 ```
 
-**II. Incomplete Ducts**
+**II. Open Ducts**
+
+Open ducts may always take the place of a non-composite element of the same type; this is what makes
+pipelines composable. As one can always replace a sequence like `( x += a ); ( x += b );` by a
+non-composed equivalent `( x += a + b )`, so can one replace a non-composite through (i.e. a single
+function that transforms values) with a composite one (i.e. a list of throughs), and so on:
+
 ```coffee
 ⋆ [ source, transforms...,        ]   ⇨ { type:      'source',   } # equiv. to a non-composite source
 ⋆ [         transforms...,        ]   ⇨ { type:      'through',  } # equiv. to a non-composite transform
 ⋆ [         transforms..., sink,  ]   ⇨ { type:      'sink',     } # equiv. to a non-composite sink
 ```
 
-**III. Complete Ducts**
+**III. Closed Ducts**
+
+Closed ducts are pipelines that have both a source and a sink (plus any number of throughs). They are like a
+closed electric circuit and will start running when being passed to the `pull()` method (but note that
+actual data flow may be indefinitely postponed in case the source does not start delivering immediately).
+
 ```coffee
 ⋆ [ source, transforms..., sink,  ]   ⇨ { type:      'circuit',  } # ready to run
 ```
