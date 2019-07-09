@@ -24,20 +24,20 @@ equivalent to the sole transform.
 
 **Duct Configurations:**
 
-*I. Special Arities*
+**I. Special Arities**
 ```coffee
 ⋆ []                                  ⇨ { is_empty:  true,       } # equiv. to a no-op
 ⋆ [ x, ]                              ⇨ { is_single: true,       } # equiv. to its single member
 ```
 
-*II. Incomplete Ducts*
+**II. Incomplete Ducts**
 ```coffee
 ⋆ [ source, transforms...,        ]   ⇨ { type:      'source',   } # equiv. to a non-composite source
 ⋆ [         transforms...,        ]   ⇨ { type:      'through',  } # equiv. to a non-composite transform
 ⋆ [         transforms..., sink,  ]   ⇨ { type:      'sink',     } # equiv. to a non-composite sink
 ```
 
-*III. Complete Ducts*
+**III. Complete Ducts**
 ```coffee
 ⋆ [ source, transforms..., sink,  ]   ⇨ { type:      'circuit',  } # ready to run
 ```
