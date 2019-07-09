@@ -24,12 +24,14 @@ equivalent to the sole transform.
 
 **Duct Configurations:**
 
-* `[]                                 ⇨ { is_empty:     true, }`
-* `[ x, ]                             ⇨ { is_single:    true, }`
-* `[ source, transforms..., ]         ⇨ { is_source:    true, }`
-* `[ transforms..., sink, ]           ⇨ { is_sink:      true, }`
-* `[ transforms..., ]                 ⇨ { is_through:   true, }`
-* `[ source, transforms..., sink, ]   ⇨ { is_complete:  true, }`
+```
+⋆ []                                 ⇨ { is_empty:     true, }
+⋆ [ x, ]                             ⇨ { is_single:    true, }
+⋆ [ source, transforms..., ]         ⇨ { is_source:    true, }
+⋆ [ transforms..., sink, ]           ⇨ { is_sink:      true, }
+⋆ [ transforms..., ]                 ⇨ { is_through:   true, }
+⋆ [ source, transforms..., sink, ]   ⇨ { is_complete:  true, }
+```
 
 ### Behavior for Ending Streams
 
