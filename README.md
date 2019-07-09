@@ -25,14 +25,17 @@ equivalent to the sole transform.
 **Duct Configurations:**
 
 ```coffee
-⋆ []                                  ⇨ { is_empty:  true,       } # always a no-op
-⋆ [ x, ]                              ⇨ { is_single: true,       } # always equiv. to its single member
+I. Special Arities
+⋆ []                                  ⇨ { is_empty:  true,       } # equiv. to a no-op
+⋆ [ x, ]                              ⇨ { is_single: true,       } # equiv. to its single member
 
-⋆ [ source, transforms...,        ]   ⇨ { type:      'source',   }
-⋆ [         transforms...,        ]   ⇨ { type:      'through',  }
-⋆ [         transforms..., sink,  ]   ⇨ { type:      'sink',     }
+II. Incomplete Ducts
+⋆ [ source, transforms...,        ]   ⇨ { type:      'source',   } # equiv. to a non-composite source
+⋆ [         transforms...,        ]   ⇨ { type:      'through',  } # equiv. to a non-composite transform
+⋆ [         transforms..., sink,  ]   ⇨ { type:      'sink',     } # equiv. to a non-composite sink
 
-⋆ [ source, transforms..., sink,  ]   ⇨ { type:      'circuit',  }
+II. Complete Ducts
+⋆ [ source, transforms..., sink,  ]   ⇨ { type:      'circuit',  } # Complete, `pull()` will start throughput
 ```
 
 ### Behavior for Ending Streams
