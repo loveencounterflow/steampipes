@@ -40,6 +40,8 @@ misfit                    = Symbol 'misfit'
 #-----------------------------------------------------------------------------------------------------------
 ### Marks are special values that identify types, behavior of pipeline elements etc: ###
 @marks = Object.freeze
+  isa_source:       Symbol 'isa_source'       # Marks a source as such
+  isa_through:      Symbol 'isa_through'      # Marks a through as such
   isa_sink:         Symbol 'isa_sink'         # Marks a sink as such
   isa_duct:         Symbol 'isa_duct'         # Marks a duct as such
   isa_pusher:       Symbol 'isa_pusher'       # Marks a push source as such
