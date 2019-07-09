@@ -45,6 +45,7 @@ A pipeline with a single element produces a duct with the property `is_single: t
 equivalent to its sole transform, and its `type` property is that of its sole element.
 
 ```coffee
+SHAPE OF PIPELINE                     SHAPE OF DUCT                   REMARKS
 ⋆ []                                  ⇨ { is_empty:  true,       } # equiv. to a no-op
 ⋆ [ x, ]                              ⇨ { is_single: true,       } # equiv. to its single member
 ```
@@ -57,6 +58,7 @@ non-composed equivalent `( x += a + b )`, so can one replace a non-composite thr
 function that transforms values) with a composite one (i.e. a list of throughs), and so on:
 
 ```coffee
+SHAPE OF PIPELINE                     SHAPE OF DUCT                   REMARKS
 ⋆ [ source, transforms...,        ]   ⇨ { type:      'source',   } # equiv. to a non-composite source
 ⋆ [         transforms...,        ]   ⇨ { type:      'through',  } # equiv. to a non-composite transform
 ⋆ [         transforms..., sink,  ]   ⇨ { type:      'sink',     } # equiv. to a non-composite sink
@@ -69,6 +71,7 @@ closed electric circuit and will start running when being passed to the `pull()`
 actual data flow may be indefinitely postponed in case the source does not start delivering immediately).
 
 ```coffee
+SHAPE OF PIPELINE                     SHAPE OF DUCT                   REMARKS
 ⋆ [ source, transforms..., sink,  ]   ⇨ { type:      'circuit',  } # ready to run
 ```
 
