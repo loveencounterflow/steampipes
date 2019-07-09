@@ -17,6 +17,19 @@ switched to [pull-streams](https://pull-stream.github.io).
 
 ## Notes
 
+### Ducts
+
+Two special arities: `empty` and `single`. `empty` is always a no-op, hence discardable; `single` always
+equivalent to the sole transform.
+
+**Duct Configurations:**
+
+* `[]` ⇨ `{ is_empty: true, }`
+* `[x]` ⇨ `{ is_single: true, }`
+* `[source——transforms*]`
+* `[transforms*——sink]`
+* `[source—transforms*—sink]`
+
 ### Behavior for Ending Streams
 
 Two ways to end a stream from inside a transform: either
