@@ -37,6 +37,7 @@ misfit                    = Symbol 'misfit'
   end:              Symbol 'end'              # Request stream to terminate
 @marks =
   sink:             Symbol 'sink'             # Marks a sink (only used by `$drain()`)
+  isa_duct:         Symbol 'isa_duct'         # Marks a duct
   send_last:        Symbol 'send_last'        # Request to get called once more after has ended
   push_source:      Symbol 'push_source'      # Used to identify a push source; needed by `pull()`
 
@@ -197,7 +198,7 @@ $watch = ( settings, method ) ->
 @_classify_pipeline = ( transforms ) ->
   ### TAINT test for, complain about illegal combinations of sources, sinks ###
   return { empty: true, } if transforms.length is 0
-  R       = { length: transforms.length, transforms, }
+  R       = { [@marks.isa_duct], length: transforms.length, transforms, }
   R.first = @_classify_transform first_of transforms
   R.last  = @_classify_transform last_of  transforms
   return R
