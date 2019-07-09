@@ -190,8 +190,8 @@ $watch = ( settings, method ) ->
 
 #-----------------------------------------------------------------------------------------------------------
 @_classify_transform = ( transform ) ->
-  return { type: 'source', subtype: is_push: true,  } if transform[ @marks.isa_pusher  ]?
-  return { type: 'source',                          } if transform[ Symbol.iterator     ]?
+  return { type: 'source', subtype: is_push: true,  } if transform[ @marks.isa_pusher ]?
+  return { type: 'source',                          } if transform[ Symbol.iterator   ]?
   switch type = type_of transform
     when 'function'           then return { type: 'through', }
     when 'generatorfunction'  then return { type: 'source', must_call: true, }
