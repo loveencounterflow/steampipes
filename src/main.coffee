@@ -312,8 +312,11 @@ $watch = ( settings, method ) ->
 
 #-----------------------------------------------------------------------------------------------------------
 @_push = ( duct ) ->
+  ### Make `duct` available from the POV of the push source: ###
   duct.original_source.duct = duct
+  ### copy buffered data (from before when `pull()` was called) to `original_source`: ###
   duct.mem_source.splice duct.mem_source.length, 0, duct.original_source.buffer...
+  ### Process any data as may have accumulated at this point: ###
   duct.exhaust_pipeline()
   return null
 
