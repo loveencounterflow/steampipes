@@ -41,11 +41,7 @@ class @Steampipes extends Multimix
     # declarations.declare_types.apply @
 
 ############################################################################################################
-module.exports = L = new @Steampipes()
-do ->
-	for key, value of L
-		L[ key ] = value.bind L if isa.function value
-	return null
-
+module.exports 	= L = new Steampipes()
+L.Steampipes 		= Steampipes
 
 
