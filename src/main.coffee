@@ -207,7 +207,7 @@ $watch = ( settings, method ) ->
   return R
 
 #-----------------------------------------------------------------------------------------------------------
-@_duct_from_transforms = ( transforms ) ->
+@_new_duct = ( transforms ) ->
   ### TAINT test for, complain about illegal combinations of sources, sinks ###
   R       = { [@marks.isa_duct], transforms, }
   blurbs  = ( @_classify_transform transform for transform in transforms )
