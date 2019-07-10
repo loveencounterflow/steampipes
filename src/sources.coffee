@@ -6,7 +6,7 @@
 ############################################################################################################
 CND                       = require 'cnd'
 rpr                       = CND.rpr
-badge                     = 'STEAMPIPES/BASICS'
+badge                     = 'STEAMPIPES/SOURCES'
 debug                     = CND.get_logger 'debug',     badge
 warn                      = CND.get_logger 'warn',      badge
 info                      = CND.get_logger 'info',      badge
@@ -16,36 +16,29 @@ whisper                   = CND.get_logger 'whisper',   badge
 echo                      = CND.echo.bind CND
 #...........................................................................................................
 { jr }                    = CND
+assign                    = Object.assign
 #...........................................................................................................
-@types                    = require './types'
 { isa
   validate
-  type_of }               = @types
-Multimix                  = require 'multimix'
-
+  type_of }               = require './types'
 
 #-----------------------------------------------------------------------------------------------------------
-class @Steampipes extends Multimix
-  # @extend   object_with_class_properties
-  @include require './pull-remit'
-  @include require './standard-transforms'
-  @include require './sources'
-  @include require './windowing'
+@new_value_source = ( x ) -> yield from x
 
-  #---------------------------------------------------------------------------------------------------------
-  constructor: ( @settings = null ) ->
-    super()
-    # @specs    = {}
-    # @isa      = Multimix.get_keymethod_proxy @, isa
-    # # @validate = Multimix.get_keymethod_proxy @, validate
-    # declarations.declare_types.apply @
-
-############################################################################################################
-module.exports = L = new @Steampipes()
-do ->
-	for key, value of L
-		L[ key ] = value.bind L if isa.function value
-	return null
-
-
+#-----------------------------------------------------------------------------------------------------------
+@new_push_source = ->
+  send = ( d ) =>
+    return R.buffer.push d unless R.duct?
+    R.buffer = null
+    return end() if d is @signals.end
+    R.duct.mem_source.push d
+    R.duct.exhaust_pipeline()
+    return null
+  end = =>
+    R.duct.mem_source.push @signals.last
+    R.duct.exhaust_pipeline()
+    R.duct.last.on_end() if R.duct.last.on_end?
+    return R.duct = null
+  R = { [@marks.isa_pusher], send, end, buffer: [], duct: null, }
+  return R
 
