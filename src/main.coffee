@@ -193,6 +193,7 @@ $watch = ( settings, method ) ->
 #-----------------------------------------------------------------------------------------------------------
 @_classify_transform = ( transform ) ->
   R = do =>
+    return { type: transform.type,              } if transform[ @marks.isa_duct   ]?
     return { type: 'source', isa_pusher: true,  } if transform[ @marks.isa_pusher ]?
     return { type: 'source',                    } if transform[ Symbol.iterator   ]?
     switch type = type_of transform
