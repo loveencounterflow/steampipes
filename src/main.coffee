@@ -339,7 +339,7 @@ $watch = ( settings, method ) ->
   end = =>
     R.duct.mem_source.push @signals.last
     R.duct.exhaust_pipeline()
-    R.duct.on_end() if R.duct.on_end?
+    R.duct.last.on_end() if R.duct.last.on_end?
     return R.duct = null
   R = { [@marks.isa_pusher], send, end, buffer: [], duct: null, }
   return R
