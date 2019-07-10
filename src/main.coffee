@@ -233,11 +233,11 @@ $watch = ( settings, method ) ->
 
 #-----------------------------------------------------------------------------------------------------------
 @_pull = ( transforms... ) ->
-  duct            = @_duct_from_transforms transforms
-  has_sink        = false
-  has_source      = false
-  on_end          = null
-  original_source = null
+  duct                  = @_new_duct transforms
+  has_sink              = false
+  has_source            = false
+  on_end                = null
+  original_source       = null
   # debug 'µ44433', duct
   throw new Error "µ77764 source as last transform not yet supported" if duct.last.type  is 'source'
   throw new Error "µ77765 sink as first transform not yet supported"  if duct.first.type is 'sink'
@@ -252,19 +252,21 @@ $watch = ( settings, method ) ->
     on_end    = duct.last.on_end
     transforms.pop()
   #.........................................................................................................
-  ### TAINT shouldn't return null here; return pipeline? ###
-  return null unless has_sink and has_source
+  debug 'µ11122', duct
+  return duct unless duct.type is 'circuit'
   #.........................................................................................................
-  mem_source      = []
-  mem_sources     = [ mem_source, ( [] for _ in [ 0 ... transforms.length ] )..., ]
-  local_sink      = null
-  local_source    = null
-  last            = @signals.last
+  duct.original_source  = original_source
+  duct.mem_source       = mem_source      = []
+  duct.mem_sources      = mem_sources     = [ mem_source, ( [] for _ in [ 0 ... transforms.length ] )..., ]
+  duct.has_ended        = false
+  local_sink            = null
+  local_source          = null
+  last                  = @signals.last
   #.........................................................................................................
   send = ( d ) =>
-    return R.has_ended = true if d is @signals.end
+    return duct.has_ended = true if d is @signals.end
     local_sink.push d
-  send.end = => R.has_ended = true
+  send.end = => duct.has_ended = true
   #.........................................................................................................
   exhaust_pipeline = =>
     loop
@@ -282,8 +284,10 @@ $watch = ( settings, method ) ->
       break unless has_data
     return null
   #.........................................................................................................
-  R = { mem_source, original_source, send, exhaust_pipeline, on_end, has_ended: false, }
-  return R
+  duct.send             = send
+  duct.exhaust_pipeline = exhaust_pipeline
+  #.........................................................................................................
+  return duct
 
 #-----------------------------------------------------------------------------------------------------------
 @pull = ( transforms... ) ->
@@ -298,7 +302,7 @@ $watch = ( settings, method ) ->
   #.........................................................................................................
   duct.mem_source.push @signals.last
   duct.exhaust_pipeline()
-  duct.on_end() if duct.on_end?
+  duct.last.on_end() if duct.last.on_end?
   return null
 
 #-----------------------------------------------------------------------------------------------------------
