@@ -23,7 +23,7 @@ SP                        = require '../..'
 { $
   $async
   $watch
-  $show  }                = SP
+  $show  }                = SP.export()
 #...........................................................................................................
 read                      = ( path ) -> FS.readFileSync path, { encoding: 'utf-8', }
 defer                     = setImmediate
