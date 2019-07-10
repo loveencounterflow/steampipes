@@ -307,7 +307,7 @@ jr                        = JSON.stringify
 #-----------------------------------------------------------------------------------------------------------
 @[ "duct_from_transforms" ] = ( T, done ) ->
   do =>
-    r = SP._duct_from_transforms []
+    r = SP._new_duct []
     T.eq r[ SP.marks.isa_duct ],                      SP.marks.isa_duct
     T.eq r.is_empty,                                  true
     T.eq r.is_single ? false,                         false
@@ -317,7 +317,7 @@ jr                        = JSON.stringify
     T.eq r.type,                                      undefined
   #.........................................................................................................
   do =>
-    r = SP._duct_from_transforms [ source = SP.new_push_source() ]
+    r = SP._new_duct [ source = SP.new_push_source() ]
     T.eq r[ SP.marks.isa_duct ],                      SP.marks.isa_duct
     T.eq r.first,                                     r.last
     T.eq r.is_empty ? false,                          false
@@ -329,7 +329,7 @@ jr                        = JSON.stringify
     T.eq r.transforms[ 0 ][ SP.marks.isa_source ],    SP.marks.isa_source
   #.........................................................................................................
   do =>
-    r = SP._duct_from_transforms [ sink = SP.$drain on_end = ( -> ) ]
+    r = SP._new_duct [ sink = SP.$drain on_end = ( -> ) ]
     T.eq r.first,                                     r.last
     T.eq r.is_single,                                 true
     T.eq r.first.type,                                'sink'
@@ -338,7 +338,7 @@ jr                        = JSON.stringify
     T.eq r.transforms[ 0 ][ SP.marks.isa_sink ],      SP.marks.isa_sink
   #.........................................................................................................
   do =>
-    r = SP._duct_from_transforms [ through = SP.$ ( ( d, send ) -> ) ]
+    r = SP._new_duct [ through = SP.$ ( ( d, send ) -> ) ]
     T.eq r.first,                                     r.last
     T.eq r.is_single,                                 true
     T.eq r.first.type,                                'through'
@@ -347,7 +347,7 @@ jr                        = JSON.stringify
     T.eq r.transforms[ 0 ][ SP.marks.isa_through ],   SP.marks.isa_through
   #.........................................................................................................
   do =>
-    r = SP._duct_from_transforms [ ( SP.new_value_source [] ), ( SP.$ ( d, send ) -> ), ]
+    r = SP._new_duct [ ( SP.new_value_source [] ), ( SP.$ ( d, send ) -> ), ]
     T.eq r.is_empty ? false,                          false
     T.eq r.is_single ? false,                         false
     T.eq r.first.type,                                'source'
@@ -355,14 +355,14 @@ jr                        = JSON.stringify
     T.eq r.transforms[ 0 ][ SP.marks.isa_source ],    SP.marks.isa_source
   #.........................................................................................................
   do =>
-    f = -> SP._duct_from_transforms [
+    f = -> SP._new_duct [
       ( SP.new_value_source []  )
       ( SP.new_value_source []  )
       ( SP.$ ( d, send ) ->     ) ]
     T.throws /illegal duct configuration/, f
   #.........................................................................................................
   do =>
-    r = SP._duct_from_transforms [
+    r = SP._new_duct [
       ( SP.new_value_source []  )
       ( SP.$ ( d, send ) ->     )
       ( SP.$drain()             ) ]
