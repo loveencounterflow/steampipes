@@ -297,6 +297,7 @@ $watch = ( settings, method ) ->
 #-----------------------------------------------------------------------------------------------------------
 @pull = ( transforms... ) ->
   duct = @_pull transforms...
+  return duct unless duct.type is 'circuit'
   return @_push duct if duct.original_source[ @marks.isa_pusher ]?
   #.........................................................................................................
   for d from duct.original_source
