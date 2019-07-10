@@ -207,8 +207,8 @@ xrpr                      = ( x ) -> inspect x, { colors: yes, breakLength: Infi
 unless module.parent?
   # test @
   # test @[ "1 leapfrog lookaround with groups" ]
-  test @[ "1 leapfrog lookaround with groups 2" ]
+  # test @[ "1 leapfrog lookaround with groups 2" ]
   # test @[ "2 leapfrog lookaround ungrouped" ]
   # test @[ "3 lookaround" ]
-  # test @[ "4 leapfrog" ]
+  test @[ "4 leapfrog" ]
   # test @[ "5 leapfrog window ungrouped" ]

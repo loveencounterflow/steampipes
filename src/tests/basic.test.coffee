@@ -691,56 +691,6 @@ jr                        = JSON.stringify
   return null
 
 #-----------------------------------------------------------------------------------------------------------
-@[ "leapfrog 1" ] = ( T, done ) ->
-  # through = require 'pull-through'
-  probes_and_matchers = [
-    [[[ 1 .. 10], ( ( d ) -> d %% 2 isnt 0 ), ],[1,102,3,104,5,106,7,108,9,110],null]
-    ]
-  #.........................................................................................................
-  collector = []
-  for [ probe, matcher, error, ] in probes_and_matchers
-    await T.perform probe, matcher, error, -> new Promise ( resolve ) ->
-      [ values
-        jumper ]  = probe
-      #.....................................................................................................
-      source      = SP.new_value_source values
-      collector   = []
-      pipeline    = []
-      pipeline.push source
-      pipeline.push SP.$ { leapfrog: jumper, }, ( d, send ) -> send 100 + d
-      pipeline.push SP.$collect { collector, }
-      pipeline.push SP.$drain -> resolve collector
-      pull pipeline...
-  #.........................................................................................................
-  done()
-  return null
-
-#-----------------------------------------------------------------------------------------------------------
-@[ "leapfrog 2" ] = ( T, done ) ->
-  # through = require 'pull-through'
-  probes_and_matchers = [
-    [[[ 1 .. 10], ( ( d ) -> d %% 2 isnt 0 ), ],[1,102,3,104,5,106,7,108,9,110],null]
-    ]
-  #.........................................................................................................
-  collector = []
-  for [ probe, matcher, error, ] in probes_and_matchers
-    await T.perform probe, matcher, error, -> new Promise ( resolve ) ->
-      [ values
-        jumper ]  = probe
-      #.....................................................................................................
-      source      = SP.new_value_source values
-      collector   = []
-      pipeline    = []
-      pipeline.push source
-      pipeline.push SP.$ { leapfrog: jumper, }, ( d, send ) -> send 100 + d
-      pipeline.push SP.$collect { collector, }
-      pipeline.push SP.$drain -> resolve collector
-      pull pipeline...
-  #.........................................................................................................
-  done()
-  return null
-
-#-----------------------------------------------------------------------------------------------------------
 @[ "$scramble" ] = ( T, done ) ->
   probes_and_matchers = [
     [[[],0.5,42],[],null]
