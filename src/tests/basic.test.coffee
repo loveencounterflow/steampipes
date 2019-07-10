@@ -371,28 +371,30 @@ jr                        = JSON.stringify
   done()
   return null
 
-# #-----------------------------------------------------------------------------------------------------------
-# @[ "composability" ] = ( T, done ) ->
-#   [ probe, matcher, error, ] = [["what","a","lot","of","little","bottles"],["what","a","lot","of","little","bottles"],null]
-#   await T.perform probe, matcher, error, -> return new Promise ( resolve, reject ) ->
-#     R           = []
-#     source      = probe
-#     #.......................................................................................................
-#     pipeline_A  = []
-#     pipeline_A.push SP.$watch ( d ) -> info xrpr d
-#     pipeline_A.push SP.$collect { collector: R, }
-#     debug 'µ44311', transform_A = SP.pull pipeline_A
-#     #.......................................................................................................
-#     pipeline_B  = []
-#     pipeline_B.push source
-#     pipeline_B.push transform_A
-#     pipeline_B.push SP.$watch ( d ) -> info xrpr d
-#     pipeline_B.push SP.$drain -> help 'ok'; resolve R
-#     SP.pull pipeline_B...
-#     return null
-#   #.........................................................................................................
-#   done()
-#   return null
+#-----------------------------------------------------------------------------------------------------------
+@[ "composability" ] = ( T, done ) ->
+  [ probe, matcher, error, ] = [["what","a","lot","of","little","bottles"],["what","a","lot","of","little","bottles"],null]
+  await T.perform probe, matcher, error, -> return new Promise ( resolve, reject ) ->
+    R           = []
+    source      = probe
+    #.......................................................................................................
+    pipeline_A  = []
+    pipeline_A.push SP.$watch ( d ) -> info xrpr d
+    pipeline_A.push SP.$collect { collector: R, }
+    duct_A = SP.pull pipeline_A...
+    T.eq duct_A.transforms.length,  2
+    T.eq duct_A.type,               'through'
+    #.......................................................................................................
+    pipeline_B  = []
+    pipeline_B.push source
+    pipeline_B.push duct_A
+    pipeline_B.push SP.$watch ( d ) -> info xrpr d
+    pipeline_B.push SP.$drain -> help 'ok'; resolve R
+    SP.pull pipeline_B...
+    return null
+  #.........................................................................................................
+  done()
+  return null
 
 ###
 
