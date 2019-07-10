@@ -208,10 +208,21 @@ $watch = ( settings, method ) ->
   return R
 
 #-----------------------------------------------------------------------------------------------------------
+@_flatten_transforms = ( transforms, R = null ) ->
+  R ?= []
+  for transform in transforms
+    if transform[ @marks.isa_duct ]?
+      ### TAINT necessary to do this recursively? ###
+      R.push t for t in transform.transforms
+    else
+      R.push transform
+  return R
+
+#-----------------------------------------------------------------------------------------------------------
 @_new_duct = ( transforms ) ->
-  ### TAINT test for, complain about illegal combinations of sources, sinks ###
-  R       = { [@marks.isa_duct], transforms, }
-  blurbs  = ( @_classify_transform transform for transform in transforms )
+  transforms  = @_flatten_transforms transforms
+  R           = { [@marks.isa_duct], transforms, }
+  blurbs      = ( @_classify_transform transform for transform in transforms )
   return { R..., is_empty: true, } if transforms.length is 0
   #.........................................................................................................
   R.first = blurbs[ 0 ]
@@ -235,25 +246,18 @@ $watch = ( settings, method ) ->
 #-----------------------------------------------------------------------------------------------------------
 @_pull = ( transforms... ) ->
   duct                  = @_new_duct transforms
-  has_sink              = false
-  has_source            = false
-  on_end                = null
+  { transforms, }       = duct
   original_source       = null
-  # debug 'µ44433', duct
   throw new Error "µ77764 source as last transform not yet supported" if duct.last.type  is 'source'
   throw new Error "µ77765 sink as first transform not yet supported"  if duct.first.type is 'sink'
   #.........................................................................................................
   if duct.first.type is 'source'
     original_source = transforms.shift()
     original_source = original_source() if duct.first.must_call
-    has_source      = true
   #.........................................................................................................
   if duct.last.type is 'sink'
-    has_sink  = true
-    on_end    = duct.last.on_end
     transforms.pop()
   #.........................................................................................................
-  debug 'µ11122', duct
   return duct unless duct.type is 'circuit'
   #.........................................................................................................
   duct.original_source  = original_source
