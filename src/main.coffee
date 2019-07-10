@@ -25,12 +25,15 @@ Multimix                  = require 'multimix'
 
 
 #-----------------------------------------------------------------------------------------------------------
-class @Steampipes extends Multimix
+class Steampipes extends Multimix
   # @extend   object_with_class_properties
   @include require './pull-remit'
   @include require './standard-transforms'
   @include require './sources'
   @include require './windowing'
+  @include require './wye-tee-merge'
+  @include require './njs-streams-and-files'
+  @include require './pipestreams-adapter'
 
   #---------------------------------------------------------------------------------------------------------
   constructor: ( @settings = null ) ->
