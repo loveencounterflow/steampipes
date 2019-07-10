@@ -188,7 +188,6 @@ jr                        = JSON.stringify
   pipeline.push SP.$map ( d ) -> d.toUpperCase()
   pipeline.push SP.$pass()
   pipeline.push $ ( d, send ) ->
-    debug 'µ33331', d
     send d
     send "(#{d})"
   pipeline.push SP.$show()
@@ -208,7 +207,6 @@ jr                        = JSON.stringify
   pipeline.push SP.$map ( d ) -> d.toUpperCase()
   pipeline.push SP.$show()
   pipeline.push $ { last, }, ( d, send ) ->
-    debug 'µ445522', d
     return send 'ok' if d is last
     send d
     send "(#{d})"
@@ -229,7 +227,6 @@ jr                        = JSON.stringify
   pipeline.push $ ( d, send ) -> if d is 'E' then send.end() else send d
   pipeline.push SP.$show()
   pipeline.push $ { last, }, ( d, send ) ->
-    debug 'µ445522', d
     return send 'ok' if d is last
     send d
     send "(#{d})"
@@ -778,13 +775,13 @@ jr                        = JSON.stringify
 
 ############################################################################################################
 unless module.parent?
-  # test @, 'timeout': 30000
+  test @, 'timeout': 30000
   # test @[ "remit"                           ]
   # test @[ "remit with end detection 1"      ]
-  test @[ "duct_from_transforms"            ]
+  # test @[ "duct_from_transforms"            ]
   # test @[ "composability"                   ]
   # test @[ "remit with end detection 2"      ]
-  # test @[ "remit with surrounds" ]
+  # test @[ "remit with surrounds"            ]
   # test @[ "watch with end detection 1"      ]
   # test @[ "watch with end detection 2"      ]
   # test @[ "end push source (1)"             ]
