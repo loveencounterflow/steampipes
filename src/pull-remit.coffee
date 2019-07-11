@@ -6,7 +6,7 @@
 ############################################################################################################
 CND                       = require 'cnd'
 rpr                       = CND.rpr
-badge                     = 'STEAMPIPES/BASICS'
+badge                     = 'STEAMPIPES/PULL-REMIT'
 debug                     = CND.get_logger 'debug',     badge
 warn                      = CND.get_logger 'warn',      badge
 info                      = CND.get_logger 'info',      badge
@@ -207,31 +207,34 @@ remit_defaults = Object.freeze
   #.........................................................................................................
   duct.original_source  = original_source
   duct.mem_source       = mem_source      = []
-  duct.mem_sources      = mem_sources     = [ mem_source, ( [] for _ in [ 0 ... transforms.length ] )..., ]
+  duct.mem_sources      = mem_sources     = [ mem_source, ( [] for _ in [ 0 ... transforms.length - 1 ] )..., ]
   duct.has_ended        = false
   local_sink            = null
   local_source          = null
+  has_local_sink        = null
   last                  = @signals.last
   #.........................................................................................................
   send = ( d ) =>
     return duct.has_ended = true if d is @signals.end
-    local_sink.push d
+    local_sink.push d if has_local_sink
+    return null
   send.end = => duct.has_ended = true
   #.........................................................................................................
   exhaust_pipeline = =>
     loop
-      has_data = false
+      data_count    = 0
       for transform, idx in transforms
         continue if ( local_source = mem_sources[ idx ] ).length is 0
-        has_data      = true
-        local_sink    = mem_sources[ idx + 1 ]
-        d             = local_source.shift()
+        local_sink      = mem_sources[ idx + 1 ]
+        has_local_sink  = local_sink?
+        d               = local_source.shift()
+        data_count     += local_source.length
         if d is last
           transform d, send if transform[ @marks.send_last ]?
           send last
         else
           transform d, send
-      break unless has_data
+      break if data_count is 0
     return null
   #.........................................................................................................
   duct.send             = send
@@ -254,7 +257,7 @@ remit_defaults = Object.freeze
   duct.mem_source.push @signals.last
   duct.exhaust_pipeline()
   duct.last.on_end() if duct.last.on_end?
-  return null
+  return duct
 
 #-----------------------------------------------------------------------------------------------------------
 @_push = ( duct ) ->
