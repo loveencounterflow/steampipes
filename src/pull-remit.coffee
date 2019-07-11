@@ -138,13 +138,13 @@ remit_defaults = Object.freeze
 #-----------------------------------------------------------------------------------------------------------
 @_classify_transform = ( transform ) ->
   R = do =>
-    return { type: transform.type,              } if transform[ @marks.isa_duct   ]?
-    return { type: 'source', isa_pusher: true,  } if transform[ @marks.isa_pusher ]?
-    return { type: 'source',                    } if transform[ Symbol.iterator   ]?
+    return { type: transform.type,                    } if transform[ @marks.isa_duct   ]?
+    return { type: 'source', isa_pusher: true,        } if transform[ @marks.isa_pusher ]?
+    return { type: 'sink', on_end: transform.on_end,  } if transform[ @marks.isa_sink   ]?
+    return { type: 'source',                          } if transform[ Symbol.iterator   ]?
     switch type = type_of transform
       when 'function'           then return { type: 'through', }
       when 'generatorfunction'  then return { type: 'source', must_call: true, }
-    return { type: 'sink', on_end: transform.on_end, } if transform[ @marks.isa_sink ]?
     throw new Error "µ44521 expected an iterable, a function, a generator function or a sink, got a #{type}"
   switch R.type
     when 'source'   then  transform[ @marks.isa_source  ] ?= @marks.isa_source
