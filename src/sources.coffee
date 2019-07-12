@@ -31,11 +31,11 @@ assign                    = Object.assign
     return R.buffer.push d unless R.duct?
     R.buffer = null
     return end() if d is @signals.end
-    R.duct.mem_source.push d
+    R.duct.buckets[ 0 ].push d
     R.duct.exhaust_pipeline()
     return null
   end = =>
-    R.duct.mem_source.push @signals.last
+    R.duct.buckets[ 0 ].push @signals.last
     R.duct.exhaust_pipeline()
     R.duct.last.on_end() if R.duct.last.on_end?
     return R.duct = null

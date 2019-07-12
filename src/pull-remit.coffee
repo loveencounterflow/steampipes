@@ -205,14 +205,13 @@ remit_defaults = Object.freeze
   #.........................................................................................................
   return duct unless duct.type is 'circuit'
   #.........................................................................................................
-  duct.mem_source       = mem_source      = []
-  duct.mem_sources      = mem_sources     = [ mem_source, ( [] for _ in [ 0 ... transforms.length - 2 ] )..., ]
+  duct.buckets          = buckets     = ( [] for _ in [ 0 ... transforms.length - 1 ] )
   duct.has_ended        = false
   local_sink            = null
   local_source          = null
   has_local_sink        = null
   last                  = @signals.last
-  tf_idxs               = [ 0 .. mem_sources.length - 1 ]
+  tf_idxs               = [ 0 .. buckets.length - 1 ]
   #.........................................................................................................
   send = ( d ) =>
     return duct.has_ended = true if d is @signals.end
@@ -225,9 +224,9 @@ remit_defaults = Object.freeze
       data_count    = 0
       # for transform, idx in transforms
       for idx in tf_idxs
-        continue if ( local_source = mem_sources[ idx ] ).length is 0
+        continue if ( local_source = buckets[ idx ] ).length is 0
         transform       = transforms[  idx + 1 ]
-        local_sink      = mem_sources[ idx + 1 ]
+        local_sink      = buckets[ idx + 1 ]
         has_local_sink  = local_sink?
         d               = local_source.shift()
         data_count     += local_source.length
@@ -249,25 +248,30 @@ remit_defaults = Object.freeze
   duct = @_pull transforms...
   return duct unless duct.type is 'circuit'
   return @_push duct if duct.transforms[ 0 ][ @marks.isa_pusher ]?
+  first_bucket = duct.buckets[ 0 ]
   #.........................................................................................................
   for d from duct.transforms[ 0 ]
     break if duct.has_ended
     # continue if d is @signals.discard
-    duct.mem_source.push d
+    first_bucket.push d
     duct.exhaust_pipeline()
   #.........................................................................................................
-  duct.mem_source.push @signals.last
+  first_bucket.push @signals.last
   duct.exhaust_pipeline()
+  # on_end = duct.last.on_end ? null
+  # delete duct[ k ] for k of duct
+  # on_end() if on_end?
   duct.last.on_end() if duct.last.on_end?
   return duct
 
 #-----------------------------------------------------------------------------------------------------------
 @_push = ( duct ) ->
   ### Make `duct` available from the POV of the push source: ###
-  source = duct.transforms[ 0 ]
-  source.duct = duct
+  source        = duct.transforms[ 0 ]
+  source.duct   = duct
   ### copy buffered data (from before when `pull()` was called) to `source`: ###
-  duct.mem_source.splice duct.mem_source.length, 0, source.buffer...
+  first_bucket  = duct.buckets[ 0 ]
+  first_bucket.splice first_bucket.length, 0, source.buffer...
   ### Process any data as may have accumulated at this point: ###
   duct.exhaust_pipeline()
   return null
