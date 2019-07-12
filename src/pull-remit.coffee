@@ -197,22 +197,22 @@ remit_defaults = Object.freeze
   throw new Error "µ77765 sink as first transform not yet supported"  if duct.first.type is 'sink'
   #.........................................................................................................
   if duct.first.type is 'source'
-    original_source = transforms.shift()
-    original_source = original_source() if duct.first.must_call
+    transforms[ 0 ] = transforms[ 0 ]() if duct.first.must_call
+    source          = transforms[ 0 ]
   #.........................................................................................................
   if duct.last.type is 'sink'
     transforms.pop()
   #.........................................................................................................
   return duct unless duct.type is 'circuit'
   #.........................................................................................................
-  duct.original_source  = original_source
   duct.mem_source       = mem_source      = []
-  duct.mem_sources      = mem_sources     = [ mem_source, ( [] for _ in [ 0 ... transforms.length - 1 ] )..., ]
+  duct.mem_sources      = mem_sources     = [ mem_source, ( [] for _ in [ 0 ... transforms.length - 2 ] )..., ]
   duct.has_ended        = false
   local_sink            = null
   local_source          = null
   has_local_sink        = null
   last                  = @signals.last
+  tf_idxs               = [ 0 .. mem_sources.length - 1 ]
   #.........................................................................................................
   send = ( d ) =>
     return duct.has_ended = true if d is @signals.end
@@ -223,8 +223,10 @@ remit_defaults = Object.freeze
   exhaust_pipeline = =>
     loop
       data_count    = 0
-      for transform, idx in transforms
+      # for transform, idx in transforms
+      for idx in tf_idxs
         continue if ( local_source = mem_sources[ idx ] ).length is 0
+        transform       = transforms[  idx + 1 ]
         local_sink      = mem_sources[ idx + 1 ]
         has_local_sink  = local_sink?
         d               = local_source.shift()
@@ -246,9 +248,9 @@ remit_defaults = Object.freeze
 @pull = ( transforms... ) ->
   duct = @_pull transforms...
   return duct unless duct.type is 'circuit'
-  return @_push duct if duct.original_source[ @marks.isa_pusher ]?
+  return @_push duct if duct.transforms[ 0 ][ @marks.isa_pusher ]?
   #.........................................................................................................
-  for d from duct.original_source
+  for d from duct.transforms[ 0 ]
     break if duct.has_ended
     # continue if d is @signals.discard
     duct.mem_source.push d
@@ -262,9 +264,10 @@ remit_defaults = Object.freeze
 #-----------------------------------------------------------------------------------------------------------
 @_push = ( duct ) ->
   ### Make `duct` available from the POV of the push source: ###
-  duct.original_source.duct = duct
-  ### copy buffered data (from before when `pull()` was called) to `original_source`: ###
-  duct.mem_source.splice duct.mem_source.length, 0, duct.original_source.buffer...
+  source = duct.transforms[ 0 ]
+  source.duct = duct
+  ### copy buffered data (from before when `pull()` was called) to `source`: ###
+  duct.mem_source.splice duct.mem_source.length, 0, source.buffer...
   ### Process any data as may have accumulated at this point: ###
   duct.exhaust_pipeline()
   return null
