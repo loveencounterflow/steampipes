@@ -98,22 +98,22 @@ time; this is only true for properly coöperating transforms.
 
 ### Aborting Streams
 
-There's no API to *abort* a stream—i.e. make the stream and all transforms cease and desist immediately—but
-you can always wrap the `pull pipeline...` invocation into a `try`/`catch` clause and throw a custom
-symbolic value:
+There's no API to abort a stream—i.e. make the stream and all transforms stop processing immediately—but one
+can always wrap the `pull pipeline...` invocation into a `try`/`catch` clause and throw a custom symbolic
+value:
 
 ```coffee
 pipeline = []
 ...
 pipeline.push $ ( d, send ) ->
   ...
-  throw 'OHNOES!'
+  throw 'abort'
   ...
 ...
 try
   pull pipeline...
 catch error
-  throw error if error isnt 'OHNOES!'
+  throw error if error isnt 'abort'
   warn "the stream was aborted"
 ...
 ```
