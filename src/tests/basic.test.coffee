@@ -354,7 +354,6 @@ jr                        = JSON.stringify
     T.eq r.first.type,                                'through'
     T.eq r.type,                                      'through'
     T.eq r.transforms[ 0 ],                           through
-    T.eq r.transforms[ 0 ][ SP.marks.isa_through ],   SP.marks.isa_through
   #.........................................................................................................
   do =>
     r = SP._new_duct [ ( SP.new_value_source [] ), ( SP.$ ( d, send ) -> ), ]

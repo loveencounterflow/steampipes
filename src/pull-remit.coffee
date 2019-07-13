@@ -35,7 +35,6 @@ misfit                    = Symbol 'misfit'
 #-----------------------------------------------------------------------------------------------------------
 ### Marks are special values that identify types, behavior of pipeline elements etc: ###
 @marks = Object.freeze
-  isa_through:      Symbol 'isa_through'      # Marks a through as such
   isa_sink:         Symbol 'isa_sink'         # Marks a sink as such
   isa_duct:         Symbol 'isa_duct'         # Marks a duct as such
   isa_pusher:       Symbol 'isa_pusher'       # Marks a push source as such
@@ -136,19 +135,14 @@ remit_defaults = Object.freeze
 
 #-----------------------------------------------------------------------------------------------------------
 @_classify_transform = ( transform ) ->
-  R = do =>
-    return { type: transform.type,                    } if transform[ @marks.isa_duct   ]?
-    return { type: 'source', isa_pusher: true,        } if transform[ @marks.isa_pusher ]?
-    return { type: 'sink', on_end: transform.on_end,  } if transform[ @marks.isa_sink   ]?
-    return { type: 'source',                          } if transform[ Symbol.iterator   ]?
-    switch type = type_of transform
-      when 'function'           then return { type: 'through', }
-      when 'generatorfunction'  then return { type: 'source', must_call: true, }
-    throw new Error "µ44521 expected an iterable, a function, a generator function or a sink, got a #{type}"
-  switch R.type
-    when 'through'  then  transform[ @marks.isa_through ] ?= @marks.isa_through
-    when 'sink'     then  transform[ @marks.isa_sink    ] ?= @marks.isa_sink
-  return R
+  return { type: transform.type,                    } if transform[ @marks.isa_duct   ]?
+  return { type: 'source', isa_pusher: true,        } if transform[ @marks.isa_pusher ]?
+  return { type: 'sink', on_end: transform.on_end,  } if transform[ @marks.isa_sink   ]?
+  return { type: 'source',                          } if transform[ Symbol.iterator   ]?
+  switch type = type_of transform
+    when 'function'           then return { type: 'through', }
+    when 'generatorfunction'  then return { type: 'source', must_call: true, }
+  throw new Error "µ44521 expected an iterable, a function, a generator function or a sink, got a #{type}"
 
 #-----------------------------------------------------------------------------------------------------------
 @_flatten_transforms = ( transforms, R = null ) ->
