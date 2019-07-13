@@ -198,12 +198,9 @@ remit_defaults = Object.freeze
     transforms[ 0 ] = transforms[ 0 ]() if duct.first.must_call
     source          = transforms[ 0 ]
   #.........................................................................................................
-  if duct.last.type is 'sink'
-    transforms.pop()
-  #.........................................................................................................
   return duct unless duct.type is 'circuit'
   #.........................................................................................................
-  duct.buckets          = buckets     = ( [] for _ in [ 0 ... transforms.length - 1 ] )
+  duct.buckets          = buckets     = ( [] for _ in [ 1 ... transforms.length - 1 ] )
   duct.has_ended        = false
   local_sink            = null
   local_source          = null
