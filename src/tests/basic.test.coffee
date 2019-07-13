@@ -189,10 +189,50 @@ jr                        = JSON.stringify
   pipeline.push $ ( d, send ) -> info 'µ2', d; send d; send d + 10
   pipeline.push $ ( d, send ) -> info 'µ3', d; result.push d; send d
   pipeline.push SP.$drain ->
-    debug 'µ11121', jr result
+    # debug 'µ11121', jr result
     T.eq result, [ 11, 21, 12, 22, 13, 23 ]
     done()
   SP.pull pipeline...
+
+#-----------------------------------------------------------------------------------------------------------
+@[ "drain with result" ] = ( T, done ) ->
+  pipeline  = []
+  pipeline.push [ 1, 2, 3, ]
+  pipeline.push $ ( d, send ) -> info 'µ1', d; send d + 10
+  pipeline.push $ ( d, send ) -> info 'µ2', d; send d; send d + 10
+  pipeline.push SP.$drain ( result ) ->
+    # debug 'µ1112-1', duct
+    # debug 'µ1112-2', jr result
+    T.eq result, [ 11, 21, 12, 22, 13, 23 ]
+    done()
+  duct = SP.pull pipeline...
+
+#-----------------------------------------------------------------------------------------------------------
+@[ "drain with sink 1" ] = ( T, done ) ->
+  sink      = []
+  pipeline  = []
+  pipeline.push [ 1, 2, 3, ]
+  pipeline.push $ ( d, send ) -> info 'µ1', d; send d + 10
+  pipeline.push $ ( d, send ) -> info 'µ2', d; send d; send d + 10
+  pipeline.push SP.$drain { sink, }, ( result ) ->
+    # debug 'µ1112-1', duct
+    # debug 'µ1112-2', jr result
+    T.ok result is sink
+    T.eq result, [ 11, 21, 12, 22, 13, 23 ]
+    done()
+  duct = SP.pull pipeline...
+
+#-----------------------------------------------------------------------------------------------------------
+@[ "drain with sink 2" ] = ( T, done ) ->
+  sink      = []
+  pipeline  = []
+  pipeline.push [ 1, 2, 3, ]
+  pipeline.push $ ( d, send ) -> info 'µ1', d; send d + 10
+  pipeline.push $ ( d, send ) -> info 'µ2', d; send d; send d + 10
+  pipeline.push SP.$drain { sink, }, ->
+    T.eq sink, [ 11, 21, 12, 22, 13, 23 ]
+    done()
+  duct = SP.pull pipeline...
 
 #-----------------------------------------------------------------------------------------------------------
 @[ "remit 2" ] = ( T, done ) ->
@@ -339,13 +379,15 @@ jr                        = JSON.stringify
     T.eq r.first.isa_pusher ? false,                  true
   #.........................................................................................................
   do =>
-    r = SP._new_duct [ sink = SP.$drain on_end = ( -> ) ]
+    r     = SP._new_duct [ sink = SP.$drain on_end = ( -> ) ]
+    drain = r.transforms[ r.transforms.length - 1 ]
     T.eq r.first,                                     r.last
     T.eq r.is_single,                                 true
     T.eq r.first.type,                                'sink'
     T.eq r.type,                                      'sink'
-    T.eq r.last.on_end,                               on_end
-    T.eq r.transforms[ 0 ][ SP.marks.isa_sink ],      SP.marks.isa_sink
+    # T.eq r.last.on_end,                               on_end
+    # T.eq r.transforms[ 0 ][ SP.marks.steampipes ],    SP.marks.steampipes
+    # T.eq r.transforms[ 0 ].type,                      'sink'
   #.........................................................................................................
   do =>
     r = SP._new_duct [ through = SP.$ ( ( d, send ) -> ) ]
@@ -463,7 +505,7 @@ jr                        = JSON.stringify
     duct_B      = SP.pull pipeline_B...
     T.eq duct_B.transforms.length,  length_of_B
     T.eq duct_B.type,               'circuit'
-    debug 'µ11124', duct_B
+    # debug 'µ11124', duct_B
     resolve R
     return null
   #.........................................................................................................
@@ -804,6 +846,7 @@ jr                        = JSON.stringify
 unless module.parent?
   test @, 'timeout': 30000
   # test @[ "remit 1"                         ]
+  # test @[ "drain with result"               ]
   # test @[ "remit 2"                         ]
   # test @[ "remit with end detection 1"      ]
   # test @[ "duct_from_transforms"            ]

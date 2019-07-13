@@ -25,8 +25,36 @@ assign                    = Object.assign
 
 #-----------------------------------------------------------------------------------------------------------
 @$map   = ( method ) -> ( d, send ) => send method d
-@$drain = ( on_end = null ) -> { [@marks.isa_sink], on_end, }
 @$pass  = -> ( d, send ) => send d
+
+#-----------------------------------------------------------------------------------------------------------
+@$drain = ( settings = null, on_end = null ) ->
+  switch ( arity = arguments.length )
+    when 0 then null
+    when 2 then null
+    when 1
+      if isa.function settings
+        [ settings, on_end, ] = [ null, settings, ]
+    else throw new Error "expected 0 to 2 arguments, got #{arity}"
+  settings ?= {}
+  settings.on_end = on_end if on_end?
+  return @_$drain settings
+
+#-----------------------------------------------------------------------------------------------------------
+@_$drain = ( settings ) ->
+  sink      = settings?.sink ? true
+  if ( on_end = settings.on_end )?
+    validate.function on_end
+    switch ( arity = on_end.length )
+      when 0 then null
+      when 1
+        sink = [] if sink is true
+      else throw new Error "expected 0 to 1 arguments, got #{arity}"
+  use_sink          = sink? and ( sink isnt true )
+  call_with_datoms  = on_end? and on_end.length is 1
+  R                 = { [@marks.validated], sink, on_end, call_with_datoms, use_sink, }
+  R.on_end          = on_end if on_end?
+  return R
 
 #-----------------------------------------------------------------------------------------------------------
 @$show = ( settings ) ->

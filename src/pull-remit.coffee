@@ -35,7 +35,8 @@ misfit                    = Symbol 'misfit'
 #-----------------------------------------------------------------------------------------------------------
 ### Marks are special values that identify types, behavior of pipeline elements etc: ###
 @marks = Object.freeze
-  isa_sink:         Symbol 'isa_sink'         # Marks a sink as such
+  steampipes:       Symbol 'steampipes'       # Marks steampipes objects
+  validated:        Symbol 'validated'        # Marks a validated sink
   isa_duct:         Symbol 'isa_duct'         # Marks a duct as such
   isa_pusher:       Symbol 'isa_pusher'       # Marks a push source as such
   send_last:        Symbol 'send_last'        # Marks transforms expecting a certain value before EOS
@@ -134,11 +135,16 @@ remit_defaults = Object.freeze
   return R
 
 #-----------------------------------------------------------------------------------------------------------
+@_classify_sink = ( transform ) ->
+  @_$drain transform unless transform[ @marks.validated ]?
+  R = { type: 'sink', }
+
+#-----------------------------------------------------------------------------------------------------------
 @_classify_transform = ( transform ) ->
-  return { type: transform.type,                    } if transform[ @marks.isa_duct   ]?
-  return { type: 'source', isa_pusher: true,        } if transform[ @marks.isa_pusher ]?
-  return { type: 'sink', on_end: transform.on_end,  } if transform[ @marks.isa_sink   ]?
-  return { type: 'source',                          } if transform[ Symbol.iterator   ]?
+  return { type: transform.type,              } if transform[ @marks.isa_duct   ]?
+  return { type: 'source', isa_pusher: true,  } if transform[ @marks.isa_pusher ]?
+  return { type: 'source',                    } if transform[ Symbol.iterator   ]?
+  return @_classify_sink transform              if ( isa.object transform ) and transform.sink?
   switch type = type_of transform
     when 'function'           then return { type: 'through', }
     when 'generatorfunction'  then return { type: 'source', must_call: true, }
@@ -196,13 +202,16 @@ remit_defaults = Object.freeze
   #.........................................................................................................
   return duct unless duct.type is 'circuit'
   #.........................................................................................................
+  drain                 = transforms[ transforms.length - 1 ]
   duct.buckets          = buckets     = ( [] for _ in [ 1 ... transforms.length - 1 ] )
+  duct.buckets.push drain.sink if drain.use_sink
   duct.has_ended        = false
   local_sink            = null
   local_source          = null
   has_local_sink        = null
   last                  = @signals.last
-  tf_idxs               = [ 0 .. buckets.length - 1 ]
+  last_transform_idx    = buckets.length - if drain.use_sink then 2 else 1
+  tf_idxs               = [ 0 .. last_transform_idx ]
   #.........................................................................................................
   send = ( d ) =>
     return duct.has_ended = true if d is @signals.end
@@ -223,7 +232,7 @@ remit_defaults = Object.freeze
         data_count     += local_source.length
         if d is last
           transform d, send if transform[ @marks.send_last ]?
-          send last
+          send last unless idx is last_transform_idx
         else
           transform d, send
       break if data_count is 0
@@ -249,10 +258,9 @@ remit_defaults = Object.freeze
   #.........................................................................................................
   first_bucket.push @signals.last
   duct.exhaust_pipeline()
-  # on_end = duct.last.on_end ? null
-  # delete duct[ k ] for k of duct
-  # on_end() if on_end?
-  duct.last.on_end() if duct.last.on_end?
+  drain = transforms[ transforms.length - 1 ]
+  if ( on_end = drain.on_end )?
+    if drain.call_with_datoms then drain.on_end drain.sink else drain.on_end()
   return duct
 
 #-----------------------------------------------------------------------------------------------------------
