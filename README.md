@@ -31,6 +31,45 @@ switched to [pull-streams](https://pull-stream.github.io).
 
 ## Notes
 
+### How to Construct Transforms
+
+#### Sinks
+
+Arbitrary objects can act as sinks provided they have a `sink` property; this property must be either set to
+`true` for a generic sink or else be an object that has `push()` method (such as a list). A sink may,
+furthermore, also have an `on_end()` method which, if set, must be a function that takes zero or one
+argument.
+
+If the `sink` property is a list, then it will receive all data items that arrive through the pipeline (the
+resultant data of the pipeline); if it is `true`, then those data items will be discarded.
+
+The `on_end()` method will be called when streaming has terminated (since the source was exhausted or a
+transform called `aend.end()`); if it takes one argument, then that will be the list of resultant data. If
+both the `sink` property has been set to a list and `on_end()` takes an argument, then that value will be
+the `sink` property (you probably only want the one or the other in most cases).
+
+```coffee
+{ sink: true, }
+{ sink: true, on_end: ( -> do_something() ), }
+{ sink: true, on_end: ( ( result ) -> do_something result ), }
+{ sink: x,    on_end: ( ( result ) -> do_something result ### NB result is x ### ), }
+```
+
+The only SteamPipes method that produces a sink is `$drain()` (it should really be called `sink()` but for
+compatibility with PipeStreams the name has been kept as a holdover from `pull-stream`). `$drain()` takes
+zero, one or two arguments:
+
+```coffee
+$drain()                is equiv. to   { sink: true, }
+$drain                     -> ...     is equiv. to   { sink: true, on_end: (       -> ... ), }
+$drain               ( x ) -> ...     is equiv. to   { sink: true, on_end: ( ( x ) -> ... ), }
+$drain { sink: x, },       -> ...     is equiv. to   { sink: x,    on_end: (       -> ... ), }
+$drain { sink: x, }, ( x ) -> ...     is equiv. to   { sink: x,    on_end: ( ( x ) -> ... ), }
+```
+
+
+
+
 ### Ducts
 
 
