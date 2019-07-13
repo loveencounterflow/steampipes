@@ -165,7 +165,7 @@ remit_defaults = Object.freeze
 @_new_duct = ( transforms ) ->
   transforms  = @_flatten_transforms transforms
   blurbs      = ( @_classify_transform transform for transform in transforms )
-  R           = { [@marks.isa_duct], transforms, blurbs, }
+  R           = { [@marks.steampipes], [@marks.isa_duct], transforms, blurbs, }
   if transforms.length is 0
     R.is_empty = true
     return R
