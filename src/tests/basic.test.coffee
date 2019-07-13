@@ -391,7 +391,7 @@ jr                        = JSON.stringify
     pipeline_A.push SP.$watch ( d ) -> info xrpr d
     pipeline_A.push SP.$collect { collector: R, }
     length_of_A = pipeline_A.length
-    duct_A = SP.pull pipeline_A...
+    duct_A      = SP.pull pipeline_A...
     T.eq duct_A.transforms.length,  length_of_A
     T.eq duct_A.type,               'through'
     #.......................................................................................................
@@ -399,11 +399,12 @@ jr                        = JSON.stringify
     pipeline_B.push source
     pipeline_B.push duct_A
     pipeline_B.push SP.$watch ( d ) -> info xrpr d
-    pipeline_B.push SP.$drain -> help 'ok'; resolve R
+    pipeline_B.push SP.$drain -> help 'ok'
     length_of_B = pipeline_B.length - 1 + length_of_A
     duct_B      = SP.pull pipeline_B...
     T.eq duct_B.transforms.length,  length_of_B
     T.eq duct_B.type,               'circuit'
+    resolve R
     return null
   #.........................................................................................................
   done()
@@ -428,11 +429,12 @@ jr                        = JSON.stringify
     pipeline_B  = []
     pipeline_B.push duct_A
     pipeline_B.push SP.$watch ( d ) -> info xrpr d
-    pipeline_B.push SP.$drain -> help 'ok'; resolve R
-    SP.pull pipeline_B...
+    pipeline_B.push SP.$drain -> help 'ok'
     length_of_B = pipeline_B.length - 1 + length_of_A
+    duct_B      = SP.pull pipeline_B...
     T.eq duct_B.transforms.length,  length_of_B
     T.eq duct_B.type,               'circuit'
+    resolve R
     return null
   #.........................................................................................................
   done()
@@ -448,9 +450,9 @@ jr                        = JSON.stringify
     pipeline_A  = []
     pipeline_A.push SP.$watch ( d ) -> info xrpr d
     pipeline_A.push SP.$collect { collector: R, }
-    pipeline_A.push SP.$drain -> help 'ok'; resolve R
+    pipeline_A.push SP.$drain -> help 'ok'
     length_of_A = pipeline_A.length
-    duct_A = SP.pull pipeline_A...
+    duct_A      = SP.pull pipeline_A...
     T.eq duct_A.transforms.length,  length_of_A
     T.eq duct_A.type,               'sink'
     #.......................................................................................................
@@ -458,10 +460,12 @@ jr                        = JSON.stringify
     pipeline_B.push source
     pipeline_B.push SP.$watch ( d ) -> info xrpr d
     pipeline_B.push duct_A
-    SP.pull pipeline_B...
     length_of_B = pipeline_B.length - 1 + length_of_A
+    duct_B      = SP.pull pipeline_B...
     T.eq duct_B.transforms.length,  length_of_B
     T.eq duct_B.type,               'circuit'
+    debug 'µ11124', duct_B
+    resolve R
     return null
   #.........................................................................................................
   done()
@@ -806,6 +810,7 @@ unless module.parent?
   # test @[ "duct_from_transforms"            ]
   # test @[ "composability (through)"                 ]
   # test @[ "composability (source)"                 ]
+  # test @[ "composability (sink)" ]
   # test @[ "remit with end detection 2"      ]
   # test @[ "remit with surrounds"            ]
   # test @[ "watch with end detection 1"      ]
