@@ -323,7 +323,6 @@ jr                        = JSON.stringify
     T.eq r.first.type,                                'source'
     T.eq r.type,                                      'source'
     T.eq r.first.isa_pusher ? false,                  true
-    T.eq r.transforms[ 0 ][ SP.marks.isa_source ],    SP.marks.isa_source
   #.........................................................................................................
   do =>
     r = SP._new_duct [ sink = SP.$drain on_end = ( -> ) ]
@@ -349,7 +348,6 @@ jr                        = JSON.stringify
     T.eq r.is_single ? false,                         false
     T.eq r.first.type,                                'source'
     T.eq r.type,                                      'source'
-    T.eq r.transforms[ 0 ][ SP.marks.isa_source ],    SP.marks.isa_source
   #.........................................................................................................
   do =>
     f = -> SP._new_duct [

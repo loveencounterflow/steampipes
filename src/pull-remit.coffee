@@ -35,7 +35,6 @@ misfit                    = Symbol 'misfit'
 #-----------------------------------------------------------------------------------------------------------
 ### Marks are special values that identify types, behavior of pipeline elements etc: ###
 @marks = Object.freeze
-  isa_source:       Symbol 'isa_source'       # Marks a source as such
   isa_through:      Symbol 'isa_through'      # Marks a through as such
   isa_sink:         Symbol 'isa_sink'         # Marks a sink as such
   isa_duct:         Symbol 'isa_duct'         # Marks a duct as such
@@ -147,7 +146,6 @@ remit_defaults = Object.freeze
       when 'generatorfunction'  then return { type: 'source', must_call: true, }
     throw new Error "µ44521 expected an iterable, a function, a generator function or a sink, got a #{type}"
   switch R.type
-    when 'source'   then  transform[ @marks.isa_source  ] ?= @marks.isa_source
     when 'through'  then  transform[ @marks.isa_through ] ?= @marks.isa_through
     when 'sink'     then  transform[ @marks.isa_sink    ] ?= @marks.isa_sink
   return R
