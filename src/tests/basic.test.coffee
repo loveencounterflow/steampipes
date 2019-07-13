@@ -181,7 +181,21 @@ jr                        = JSON.stringify
 #   done()
 
 #-----------------------------------------------------------------------------------------------------------
-@[ "remit" ] = ( T, done ) ->
+@[ "remit 1" ] = ( T, done ) ->
+  result    = []
+  pipeline  = []
+  pipeline.push [ 1, 2, 3, ]
+  pipeline.push $ ( d, send ) -> info 'µ1', d; send d + 10
+  pipeline.push $ ( d, send ) -> info 'µ2', d; send d; send d + 10
+  pipeline.push $ ( d, send ) -> info 'µ3', d; result.push d; send d
+  pipeline.push SP.$drain ->
+    debug 'µ11121', jr result
+    T.eq result, [ 11, 21, 12, 22, 13, 23 ]
+    done()
+  SP.pull pipeline...
+
+#-----------------------------------------------------------------------------------------------------------
+@[ "remit 2" ] = ( T, done ) ->
   result    = []
   pipeline  = []
   pipeline.push Array.from 'abcd'
@@ -367,7 +381,7 @@ jr                        = JSON.stringify
   return null
 
 #-----------------------------------------------------------------------------------------------------------
-@[ "composability" ] = ( T, done ) ->
+@[ "composability (through)" ] = ( T, done ) ->
   [ probe, matcher, error, ] = [["what","a","lot","of","little","bottles"],["what","a","lot","of","little","bottles"],null]
   await T.perform probe, matcher, error, -> return new Promise ( resolve, reject ) ->
     R           = []
@@ -376,8 +390,9 @@ jr                        = JSON.stringify
     pipeline_A  = []
     pipeline_A.push SP.$watch ( d ) -> info xrpr d
     pipeline_A.push SP.$collect { collector: R, }
+    length_of_A = pipeline_A.length
     duct_A = SP.pull pipeline_A...
-    T.eq duct_A.transforms.length,  2
+    T.eq duct_A.transforms.length,  length_of_A
     T.eq duct_A.type,               'through'
     #.......................................................................................................
     pipeline_B  = []
@@ -385,7 +400,68 @@ jr                        = JSON.stringify
     pipeline_B.push duct_A
     pipeline_B.push SP.$watch ( d ) -> info xrpr d
     pipeline_B.push SP.$drain -> help 'ok'; resolve R
+    length_of_B = pipeline_B.length - 1 + length_of_A
+    duct_B      = SP.pull pipeline_B...
+    T.eq duct_B.transforms.length,  length_of_B
+    T.eq duct_B.type,               'circuit'
+    return null
+  #.........................................................................................................
+  done()
+  return null
+
+#-----------------------------------------------------------------------------------------------------------
+@[ "composability (source)" ] = ( T, done ) ->
+  [ probe, matcher, error, ] = ["𦇻𦑛𦖵𦩮𦫦𧞈",( Array.from '𦇻𦑛𦖵𦩮𦫦𧞈' ),null]
+  await T.perform probe, matcher, error, -> return new Promise ( resolve, reject ) ->
+    R           = []
+    source      = probe
+    #.......................................................................................................
+    pipeline_A  = []
+    pipeline_A.push source
+    pipeline_A.push SP.$watch ( d ) -> info xrpr d
+    pipeline_A.push SP.$collect { collector: R, }
+    length_of_A = pipeline_A.length
+    duct_A = SP.pull pipeline_A...
+    T.eq duct_A.transforms.length,  length_of_A
+    T.eq duct_A.type,               'source'
+    #.......................................................................................................
+    pipeline_B  = []
+    pipeline_B.push duct_A
+    pipeline_B.push SP.$watch ( d ) -> info xrpr d
+    pipeline_B.push SP.$drain -> help 'ok'; resolve R
     SP.pull pipeline_B...
+    length_of_B = pipeline_B.length - 1 + length_of_A
+    T.eq duct_B.transforms.length,  length_of_B
+    T.eq duct_B.type,               'circuit'
+    return null
+  #.........................................................................................................
+  done()
+  return null
+
+#-----------------------------------------------------------------------------------------------------------
+@[ "composability (sink)" ] = ( T, done ) ->
+  [ probe, matcher, error, ] = ["𦇻𦑛𦖵𦩮𦫦𧞈",( Array.from '𦇻𦑛𦖵𦩮𦫦𧞈' ),null]
+  await T.perform probe, matcher, error, -> return new Promise ( resolve, reject ) ->
+    R           = []
+    source      = probe
+    #.......................................................................................................
+    pipeline_A  = []
+    pipeline_A.push SP.$watch ( d ) -> info xrpr d
+    pipeline_A.push SP.$collect { collector: R, }
+    pipeline_A.push SP.$drain -> help 'ok'; resolve R
+    length_of_A = pipeline_A.length
+    duct_A = SP.pull pipeline_A...
+    T.eq duct_A.transforms.length,  length_of_A
+    T.eq duct_A.type,               'sink'
+    #.......................................................................................................
+    pipeline_B  = []
+    pipeline_B.push source
+    pipeline_B.push SP.$watch ( d ) -> info xrpr d
+    pipeline_B.push duct_A
+    SP.pull pipeline_B...
+    length_of_B = pipeline_B.length - 1 + length_of_A
+    T.eq duct_B.transforms.length,  length_of_B
+    T.eq duct_B.type,               'circuit'
     return null
   #.........................................................................................................
   done()
@@ -724,10 +800,12 @@ jr                        = JSON.stringify
 ############################################################################################################
 unless module.parent?
   test @, 'timeout': 30000
-  # test @[ "remit"                           ]
+  # test @[ "remit 1"                         ]
+  # test @[ "remit 2"                         ]
   # test @[ "remit with end detection 1"      ]
   # test @[ "duct_from_transforms"            ]
-  # test @[ "composability"                   ]
+  # test @[ "composability (through)"                 ]
+  # test @[ "composability (source)"                 ]
   # test @[ "remit with end detection 2"      ]
   # test @[ "remit with surrounds"            ]
   # test @[ "watch with end detection 1"      ]
