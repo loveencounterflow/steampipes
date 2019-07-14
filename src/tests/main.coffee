@@ -23,14 +23,14 @@ test                      = require 'guy-test'
 ############################################################################################################
 L = @
 do ->
-  paths = FS.readdirSync __dirname
-  for path in paths
-    continue unless path.endsWith '.test.js'
-    path = PATH.join __dirname, path
+  filenames = FS.readdirSync __dirname
+  for filename in filenames
+    continue unless filename.endsWith '.test.js'
+    continue if filename.startsWith '_'
+    path = PATH.join __dirname, filename
     module = require path
     for key, value of module
       continue if key.startsWith '_'
-      # debug '39838', path, key
       throw new Error "duplicate key #{rpr key}" if L[ key ]?
       L[ key ] = value.bind L
   test L, { timeout: 5000, }

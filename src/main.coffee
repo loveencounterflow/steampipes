@@ -22,18 +22,19 @@ echo                      = CND.echo.bind CND
   validate
   type_of }               = @types
 Multimix                  = require 'multimix'
-
+FS                        = require 'fs'
 
 #-----------------------------------------------------------------------------------------------------------
 class Steampipes extends Multimix
   # @extend   object_with_class_properties
-  @include require './pull-remit'
-  @include require './standard-transforms'
-  @include require './sources'
-  @include require './windowing'
-  @include require './wye-tee-merge'
-  @include require './njs-streams-and-files'
-  @include require './pipestreams-adapter'
+  filenames = FS.readdirSync __dirname
+  for filename in filenames
+    continue unless filename.endsWith '.js'
+    continue if filename.startsWith '_'
+    continue if filename is 'main.js'
+    continue if filename is 'types.js'
+    path = './' + filename
+    @include require path
 
   #---------------------------------------------------------------------------------------------------------
   constructor: ( @settings = null ) ->
