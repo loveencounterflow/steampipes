@@ -30,30 +30,35 @@ SP                        = require '../..'
   $async
   $watch
   $show  }                = SP.export()
-
+defer                     = setImmediate
 
 #-----------------------------------------------------------------------------------------------------------
-@[ "write to file" ] = ( T, done ) ->
-  path    = '/tmp/steampipes-testfile.txt'
-  probe   = "just a bunch of words really".split /\s+/
-  matcher = null
-  error   = null
+@[ "write to file sync" ] = ( T, done ) ->
+  ### TAINT use proper tmpfile ###
+  path      = '/tmp/steampipes-testfile.txt'
+  FS.unlinkSync path if FS.existsSync path
+  probe     = "just a bunch of words really".split /\s+/
+  matcher   = null
+  error     = null
   await T.perform probe, matcher, error, -> return new Promise ( resolve, reject ) ->
     R           = []
     source      = probe
-    sink        = SP.write_to_file path, ->
-      help 'ok'
-      T.eq duct.type, 'circuit'
-      resolve null
     #.......................................................................................................
     pipeline    = []
     pipeline.push source
     pipeline.push $ ( d, send ) -> send d + '\n'
     pipeline.push $watch ( d ) -> info 'mainline', jr d
-    pipeline.push sink
-    duct = SP.pull pipeline...
-    # debug 'µ44521', sink
-    # debug 'µ44522', duct
+    # pipeline.push SP.tee_write_to_file path
+    pipeline.push SP.tee_write_to_file_sync path
+    pipeline.push SP.$drain ( sink ) ->
+      matcher = sink.join ''
+      if FS.existsSync path then  result  = FS.readFileSync path, { encoding: 'utf-8', }
+      else                        result  = null
+      # urge 'µ77655', ( jr result ), ( jr matcher )
+      T.eq result, matcher
+      help 'ok'
+      resolve null
+    SP.pull pipeline...
     return null
   #.........................................................................................................
   done()
