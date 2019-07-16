@@ -67,6 +67,20 @@ $drain { sink: x, },       -> ...     is equiv. to   { sink: x,    on_end: (    
 $drain { sink: x, }, ( x ) -> ...     is equiv. to   { sink: x,    on_end: ( ( x ) -> ... ), }
 ```
 
+### Asynchronous Sources and Transforms
+
+Asynchronous transforms can be constructed using the 'asynchronous remit' method, `$async()`. The method
+passed into `$async()` must accept three arguments, namely `d` (the data item coming down the pipeline),
+`send` (the method to send data down the pipeline), and, in addition to synchronous transforms, `done`,
+which is a callback function used to signal completion (it is analogous to the `resulve` argument of
+promises, `new Promise ( resulve, reject ) ->` and indeed implemented as such). An example:
+
+```coffee
+X███████████████
+X███████████████
+X███████████████
+X███████████████
+```
 
 
 
