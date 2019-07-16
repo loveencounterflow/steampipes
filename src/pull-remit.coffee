@@ -40,6 +40,7 @@ misfit                    = Symbol 'misfit'
   isa_duct:         Symbol 'isa_duct'         # Marks a duct as such
   isa_pusher:       Symbol 'isa_pusher'       # Marks a push source as such
   send_last:        Symbol 'send_last'        # Marks transforms expecting a certain value before EOS
+  async:            Symbol 'async'            # Marks transforms as asynchronous (experimental)
 
 #-----------------------------------------------------------------------------------------------------------
 remit_defaults = Object.freeze
@@ -135,20 +136,37 @@ remit_defaults = Object.freeze
   return R
 
 #-----------------------------------------------------------------------------------------------------------
+@$async = ( method ) ->
+  throw new Error "µ77644 surround arguments not yet implemented" unless arguments.length is 1
+  throw new Error "µ77644 method arity #{arity} not implemented" unless ( arity = method.length ) is 3
+  resolve = null
+  done    = ->
+    throw new Error "µ82081 arguments not allowed" unless arguments.length is 0
+    resolve()
+  R = ( d, send ) => return new Promise ( resolve_ ) =>
+    resolve = resolve_
+    await method d, send, done
+  R[ @marks.async ] = @marks.async
+  return R
+
+#-----------------------------------------------------------------------------------------------------------
 @_classify_sink = ( transform ) ->
   @_$drain transform unless transform[ @marks.validated ]?
   R = { type: 'sink', }
 
 #-----------------------------------------------------------------------------------------------------------
 @_classify_transform = ( transform ) ->
-  return { type: transform.type,              } if transform[ @marks.isa_duct   ]?
-  return { type: 'source', isa_pusher: true,  } if transform[ @marks.isa_pusher ]?
-  return { type: 'source',                    } if transform[ Symbol.iterator   ]?
-  return @_classify_sink transform              if ( isa.object transform ) and transform.sink?
-  switch type = type_of transform
-    when 'function'           then return { type: 'through', }
-    when 'generatorfunction'  then return { type: 'source', must_call: true, }
-  throw new Error "µ44521 expected an iterable, a function, a generator function or a sink, got a #{type}"
+  R = do =>
+    return { type: transform.type,              } if transform[ @marks.isa_duct   ]?
+    return { type: 'source', isa_pusher: true,  } if transform[ @marks.isa_pusher ]?
+    return { type: 'source',                    } if transform[ Symbol.iterator   ]?
+    return @_classify_sink transform              if ( isa.object transform ) and transform.sink?
+    switch type = type_of transform
+      when 'function'           then return { type: 'through', }
+      when 'generatorfunction'  then return { type: 'source', must_call: true, }
+    throw new Error "µ44521 expected an iterable, a function, a generator function or a sink, got a #{type}"
+  R.mode = if transform[ @marks.async ]? then 'async' else 'sync'
+  return R
 
 #-----------------------------------------------------------------------------------------------------------
 @_flatten_transforms = ( transforms, R = null ) ->
@@ -166,6 +184,7 @@ remit_defaults = Object.freeze
   transforms  = @_flatten_transforms transforms
   blurbs      = ( @_classify_transform transform for transform in transforms )
   R           = { [@marks.steampipes], [@marks.isa_duct], transforms, blurbs, }
+  R.mode      = if ( blurbs.some ( blurb ) -> blurb.mode is 'async' ) then 'async' else 'sync'
   if transforms.length is 0
     R.is_empty = true
     return R
@@ -238,14 +257,36 @@ remit_defaults = Object.freeze
       break if data_count is 0
     return null
   #.........................................................................................................
-  duct.send             = send
-  duct.exhaust_pipeline = exhaust_pipeline
+  exhaust_async_pipeline = =>
+    loop
+      data_count    = 0
+      # for transform, idx in transforms
+      for idx in tf_idxs
+        continue if ( local_source = buckets[ idx ] ).length is 0
+        transform       = transforms[  idx + 1 ]
+        local_sink      = buckets[ idx + 1 ]
+        has_local_sink  = local_sink?
+        d               = local_source.shift()
+        data_count     += local_source.length
+        if d is last
+          await transform d, send if transform[ @marks.send_last ]?
+          send last unless idx is last_transform_idx
+        else
+          await transform d, send
+      break if data_count is 0
+    return null
+  #.........................................................................................................
+  duct.send                   = send
+  duct.exhaust_pipeline       = exhaust_pipeline
+  duct.exhaust_async_pipeline = exhaust_async_pipeline
   #.........................................................................................................
   return duct
 
 #-----------------------------------------------------------------------------------------------------------
 @pull = ( transforms... ) ->
   duct = @_pull transforms...
+  if duct.mode is 'async'
+    throw new Error "µ88872 pipeline contains asynchronous transform; use `pull_async pipeline...`"
   return duct unless duct.type is 'circuit'
   return @_push duct if duct.transforms[ 0 ][ @marks.isa_pusher ]?
   first_bucket = duct.buckets[ 0 ]
@@ -258,6 +299,26 @@ remit_defaults = Object.freeze
   #.........................................................................................................
   first_bucket.push @signals.last
   duct.exhaust_pipeline()
+  drain = transforms[ transforms.length - 1 ]
+  if ( on_end = drain.on_end )?
+    if drain.call_with_datoms then drain.on_end drain.sink else drain.on_end()
+  return duct
+
+#-----------------------------------------------------------------------------------------------------------
+@pull_async = ( transforms... ) ->
+  duct = @_pull transforms...
+  return duct unless duct.type is 'circuit'
+  return @_push duct if duct.transforms[ 0 ][ @marks.isa_pusher ]?
+  first_bucket = duct.buckets[ 0 ]
+  #.........................................................................................................
+  for d from duct.transforms[ 0 ]
+    break if duct.has_ended
+    # continue if d is @signals.discard
+    first_bucket.push d
+    await duct.exhaust_async_pipeline()
+  #.........................................................................................................
+  first_bucket.push @signals.last
+  await duct.exhaust_async_pipeline()
   drain = transforms[ transforms.length - 1 ]
   if ( on_end = drain.on_end )?
     if drain.call_with_datoms then drain.on_end drain.sink else drain.on_end()
