@@ -34,7 +34,7 @@ after = ( dts, f ) -> setTimeout f, dts * 1000
     await do => new Promise ( resolve ) =>
       pipeline            = []
       pipeline.push probe
-      pipeline.push $watch ( d ) -> info 'µ1', jr d
+      # pipeline.push $watch ( d ) -> info 'µ1', jr d
       if use_async
         pipeline.push $async ( d, send, done ) ->
           defer -> send "1#{d}"
@@ -43,7 +43,7 @@ after = ( dts, f ) -> setTimeout f, dts * 1000
         pipeline.push $ ( d, send ) ->
           send "1#{d}"
           send "2#{d}"
-      pipeline.push $watch ( d ) -> urge 'µ2', jr d
+      # pipeline.push $watch ( d ) -> urge 'µ2', jr d
       pipeline.push SP.$surround { between: '-', }
       pipeline.push SP.$join()
       #.........................................................................................................
@@ -67,7 +67,7 @@ $send_three = ->
     count = 0
     for nr in [ 1 .. 3 ]
       do ( d, nr ) ->
-        dt = Math.random() / 2
+        dt = Math.random() / 10
         after dt, ->
           count += 1
           send "(#{d}:#{nr})"
@@ -102,9 +102,9 @@ $send_three = ->
 
 ############################################################################################################
 unless module.parent?
-  # test @, { timeout: 10000, }
+  test @, { timeout: 10000, }
   # test @[ "async 0" ], { timeout: 10000, }
-  test @[ "async 2" ], { timeout: 10000, }
+  # test @[ "async 2" ], { timeout: 10000, }
 
 
 
