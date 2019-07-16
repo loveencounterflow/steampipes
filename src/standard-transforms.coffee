@@ -103,3 +103,9 @@ assign                    = Object.assign
     collector.push d
     return null
 
+#-----------------------------------------------------------------------------------------------------------
+### Given a `settings` object, add values to the stream as `$ settings, ( d, send ) -> send d` would do,
+e.g. `$surround { first: 'first!', between: 'to appear in-between two values', }`. ###
+@$surround = ( settings ) -> @$ settings, ( d, send ) => send d
+
+
