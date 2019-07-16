@@ -268,11 +268,18 @@ remit_defaults = Object.freeze
         has_local_sink  = local_sink?
         d               = local_source.shift()
         data_count     += local_source.length
-        if d is last
-          await transform d, send if transform[ @marks.send_last ]?
-          send last unless idx is last_transform_idx
+        if transform[ @marks.async ]?
+          if d is last
+            await transform d, send if transform[ @marks.send_last ]?
+            send last unless idx is last_transform_idx
+          else
+            await transform d, send
         else
-          await transform d, send
+          if d is last
+            transform d, send if transform[ @marks.send_last ]?
+            send last unless idx is last_transform_idx
+          else
+            transform d, send
       break if data_count is 0
     return null
   #.........................................................................................................
@@ -285,9 +292,8 @@ remit_defaults = Object.freeze
 #-----------------------------------------------------------------------------------------------------------
 @pull = ( transforms... ) ->
   duct = @_pull transforms...
-  if duct.mode is 'async'
-    throw new Error "µ88872 pipeline contains asynchronous transform; use `pull_async pipeline...`"
   return duct unless duct.type is 'circuit'
+  return @_pull_async duct if duct.mode is 'async'
   return @_push duct if duct.transforms[ 0 ][ @marks.isa_pusher ]?
   first_bucket = duct.buckets[ 0 ]
   #.........................................................................................................
@@ -299,14 +305,13 @@ remit_defaults = Object.freeze
   #.........................................................................................................
   first_bucket.push @signals.last
   duct.exhaust_pipeline()
-  drain = transforms[ transforms.length - 1 ]
+  drain = duct.transforms[ duct.transforms.length - 1 ]
   if ( on_end = drain.on_end )?
     if drain.call_with_datoms then drain.on_end drain.sink else drain.on_end()
   return duct
 
 #-----------------------------------------------------------------------------------------------------------
-@pull_async = ( transforms... ) ->
-  duct = @_pull transforms...
+@_pull_async = ( duct ) ->
   return duct unless duct.type is 'circuit'
   return @_push duct if duct.transforms[ 0 ][ @marks.isa_pusher ]?
   first_bucket = duct.buckets[ 0 ]
@@ -319,7 +324,7 @@ remit_defaults = Object.freeze
   #.........................................................................................................
   first_bucket.push @signals.last
   await duct.exhaust_async_pipeline()
-  drain = transforms[ transforms.length - 1 ]
+  drain = duct.transforms[ duct.transforms.length - 1 ]
   if ( on_end = drain.on_end )?
     if drain.call_with_datoms then drain.on_end drain.sink else drain.on_end()
   return duct
@@ -333,7 +338,10 @@ remit_defaults = Object.freeze
   first_bucket  = duct.buckets[ 0 ]
   first_bucket.splice first_bucket.length, 0, source.buffer...
   ### Process any data as may have accumulated at this point: ###
-  duct.exhaust_pipeline()
+  if duct.mode is 'async'
+    await duct.exhaust_async_pipeline()
+  else
+    duct.exhaust_pipeline()
   return null
 
 
