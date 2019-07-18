@@ -259,11 +259,12 @@ jr                        = JSON.stringify
   pipeline  = []
   pipeline.push Array.from 'abcd'
   pipeline.push SP.$map ( d ) -> d.toUpperCase()
-  pipeline.push SP.$show()
+  pipeline.push SP.$show { title: 'x1', }
   pipeline.push $ { last, }, ( d, send ) ->
     return send 'ok' if d is last
     send d
     send "(#{d})"
+  # pipeline.push SP.$show { title: 'x2', }
   pipeline.push $watch ( d ) -> result.push d
   pipeline.push SP.$drain ->
     result = result.join ''
