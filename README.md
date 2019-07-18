@@ -29,11 +29,25 @@ switched to [pull-streams](https://pull-stream.github.io).
 * Simplicity of implementation, no recursion
 * Observability, the data pipeline is an array of arrays that one may inspect
 
-## Notes
 
-### How to Construct Transforms
+## How to Construct Sources, Transforms, and Sinks
 
-#### Sinks
+### Transforms
+
+* Functions that take 2 arguments `d` and `send` (includes `send.end()`);
+* must/should/may have a list (`Array`) that acts as so-called 'local sink' (this is where data send with
+  `send d` is stored before being passed to the next transform);
+* property to indicate whether transform is asynchronous.
+
+* transforms have a property `sink`, which must be a list (at least have a `shift()` method);
+* TF may add (ordinarily `push()`) values to the sink at any time (but processing only guaranteed when this
+  happens, in TFs marked synchronous, before the main body of the function completed, and in TFs marked
+  asynchronous, before `done()` has been called).
+* conceivable to use *same* TF, same `sink` in two or more pipelines simultaneously; conceivable to accept
+  values from other sources than the TF which is directly upstream; hence possible to construct wyes (i.e.
+  data sources that appear in mid-stream).
+
+### Sinks
 
 Arbitrary objects can act as sinks provided they have a `sink` property; this property must be either set to
 `true` for a generic sink or else be an object that has `push()` method (such as a list). A sink may,
@@ -67,7 +81,7 @@ $drain { sink: x, },       -> ...     is equiv. to   { sink: x,    on_end: (    
 $drain { sink: x, }, ( x ) -> ...     is equiv. to   { sink: x,    on_end: ( ( x ) -> ... ), }
 ```
 
-### Asynchronous Sources and Transforms
+## Asynchronous Sources and Transforms
 
 Asynchronous transforms can be constructed using the 'asynchronous remit' method, `$async()`. The method
 passed into `$async()` must accept three arguments, namely `d` (the data item coming down the pipeline),
@@ -84,10 +98,10 @@ X███████████████
 
 
 
-### Ducts
+## Ducts
 
 
-#### Duct Configurations
+### Duct Configurations
 
 **I. Special Arities**
 
@@ -128,7 +142,7 @@ SHAPE OF PIPELINE                     SHAPE OF DUCT                   REMARKS
 ⋆ [ source, transforms..., sink,  ]   ⇨ { type:      'circuit',  } # ready to run
 ```
 
-### Behavior for Ending Streams
+## Behavior for Ending Streams
 
 Two ways to end a stream from inside a transform: either
 
@@ -149,7 +163,7 @@ time; this is only true for properly coöperating transforms.
 
 
 
-### Aborting Streams
+## Aborting Streams
 
 There's no API to abort a stream—i.e. make the stream and all transforms stop processing immediately—but one
 can always wrap the `pull pipeline...` invocation into a `try`/`catch` clause and throw a custom symbolic
