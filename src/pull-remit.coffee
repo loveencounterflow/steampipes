@@ -16,12 +16,10 @@ whisper                   = CND.get_logger 'whisper',   badge
 echo                      = CND.echo.bind CND
 #...........................................................................................................
 { jr }                    = CND
-assign                    = Object.assign
 #...........................................................................................................
 { isa
   validate
   type_of }               = require './types'
-misfit                    = Symbol 'misfit'
 
 
 #===========================================================================================================
@@ -42,101 +40,21 @@ misfit                    = Symbol 'misfit'
   send_last:        Symbol 'send_last'        # Marks transforms expecting a certain value before EOS
   async:            Symbol 'async'            # Marks transforms as asynchronous (experimental)
 
-#-----------------------------------------------------------------------------------------------------------
-remit_defaults = Object.freeze
-  first:    misfit
-  last:     misfit
-  between:  misfit
-  after:    misfit
-  before:   misfit
-
 
 #===========================================================================================================
 #
 #-----------------------------------------------------------------------------------------------------------
-@_get_remit_settings = ( settings, method ) ->
-  switch remit_arity = arguments.length
-    when 1 then [ method, settings, ] = [ settings, null, ]
-    when 2 then settings = { remit_defaults..., settings..., }
-    else throw new Error "µ19358 expected 1 or 2 arguments, got #{remit_arity}"
-  #.........................................................................................................
-  validate.function method
-  throw new Error "µ20123 method arity #{arity} not implemented" unless ( arity = method.length ) is 2
-  if settings?
-    validate.function settings.leapfrog if settings.leapfrog?
-    settings._surround = \
-      ( settings.first    isnt misfit ) or \
-      ( settings.last     isnt misfit ) or \
-      ( settings.between  isnt misfit ) or \
-      ( settings.after    isnt misfit ) or \
-      ( settings.before   isnt misfit )
-  #.........................................................................................................
-  return { settings, method, }
-
-#-----------------------------------------------------------------------------------------------------------
-@remit  = @$ = ( P... ) =>
-  { settings, method, } = @_get_remit_settings P...
-  has_returned          = false
-  send                  = null
-  #.........................................................................................................
-  tsend = ( d ) =>
-    throw new Error "µ55663 illegal to call send() after method has returned" if has_returned
-    send d
-  tsend.end = -> send.end()
-  #.........................................................................................................
-  unless settings?
-    ### fast track without surround features ###
-    return ( d, send_ ) =>
-      send          = send_
-      has_returned  = false
-      method d, tsend
-      has_returned = true
-      return null
-  #.........................................................................................................
-  self                  = null
-  do_leapfrog           = settings.leapfrog
-  data_first            = settings.first
-  data_before           = settings.before
-  data_between          = settings.between
-  data_after            = settings.after
-  data_last             = settings.last
-  send_first            = data_first    isnt misfit
-  send_before           = data_before   isnt misfit
-  send_between          = data_between  isnt misfit
-  send_after            = data_after    isnt misfit
-  send_last             = data_last     isnt misfit
-  on_end                = null
-  is_first              = true
-  ME                    = @
-  #.........................................................................................................
-  ### slow track with surround features ###
-  R = ( d, send_ ) =>
-    # debug 'µ55641', d, d is @signals.last
-    send          = send_
-    has_returned  = false
-    #.......................................................................................................
-    if send_last and d is @signals.last
-      method data_last, tsend
-    #.......................................................................................................
-    else
-      if is_first then ( ( method data_first,   tsend ) if send_first   )
-      else             ( ( method data_between, tsend ) if send_between )
-      ( method data_before, tsend ) if send_before
-      is_first = false
-      #.....................................................................................................
-      # When leapfrogging is being called for, only call method if the jumper returns false:
-      if ( not do_leapfrog ) or ( not settings.leapfrog d ) then  method d, tsend
-      else                                                        send d
-      #.....................................................................................................
-      ( method data_after, tsend ) if send_after
-    has_returned = true
-    return null
-  #.........................................................................................................
-  R[ @marks.send_last ] = @marks.send_last if send_last
-  return R
+@remit  = @$ = ( P..., transform ) ->
+  validate.function transform
+  throw new Error "µ20123 transform arity #{arity} not implemented" unless ( arity = transform.length ) is 2
+  # transform.sink   ?=  []
+  # transform.send   ?=  ( d ) -> ...
+  return @modify P..., transform if P.length > 0
+  return transform
 
 #-----------------------------------------------------------------------------------------------------------
 @$async = ( method ) ->
+  ### TAINT incomplete implementation: surround, leapfrog arguments missing ###
   throw new Error "µ77644 surround arguments not yet implemented" unless arguments.length is 1
   throw new Error "µ77644 method arity #{arity} not implemented" unless ( arity = method.length ) is 3
   resolve = null
