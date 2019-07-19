@@ -47,6 +47,11 @@ switched to [pull-streams](https://pull-stream.github.io).
   values from other sources than the TF which is directly upstream; hence possible to construct wyes (i.e.
   data sources that appear in mid-stream).
 
+* Calling `$ whatever..., ( d, send ) -> ...` is always equivalent to calling `modify whatever..., $ ( d,
+  send ) -> ...`; calling `modify t` without any further arguments is equivalent to `t` (the transform
+  itself).
+
+
 ### Sinks
 
 Arbitrary objects can act as sinks provided they have a `sink` property; this property must be either set to
@@ -58,7 +63,7 @@ If the `sink` property is a list, then it will receive all data items that arriv
 resultant data of the pipeline); if it is `true`, then those data items will be discarded.
 
 The `on_end()` method will be called when streaming has terminated (since the source was exhausted or a
-transform called `aend.end()`); if it takes one argument, then that will be the list of resultant data. If
+transform called `send.end()`); if it takes one argument, then that will be the list of resultant data. If
 both the `sink` property has been set to a list and `on_end()` takes an argument, then that value will be
 the `sink` property (you probably only want the one or the other in most cases).
 
@@ -74,7 +79,7 @@ compatibility with PipeStreams the name has been kept as a holdover from `pull-s
 zero, one or two arguments:
 
 ```coffee
-$drain()                is equiv. to   { sink: true, }
+$drain()                              is equiv. to   { sink: true, }
 $drain                     -> ...     is equiv. to   { sink: true, on_end: (       -> ... ), }
 $drain               ( x ) -> ...     is equiv. to   { sink: true, on_end: ( ( x ) -> ... ), }
 $drain { sink: x, },       -> ...     is equiv. to   { sink: x,    on_end: (       -> ... ), }
