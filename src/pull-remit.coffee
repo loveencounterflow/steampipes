@@ -47,11 +47,9 @@ echo                      = CND.echo.bind CND
 @remit  = @$ = ( modifications..., transform ) ->
   validate.function transform
   throw new Error "µ20123 transform arity #{arity} not implemented" unless ( arity = transform.length ) is 2
-  unless transform.sink?
-    transform.sink    = sink = []
-    transform.send    = sink.push
-  unless transform.send?
-    throw new Error "µ98897 transform cannot have property `send()` but no sink"
+  unless ( sink = transform.sink )?
+    transform.sink = sink = []
+  transform.send = sink.push.bind sink
   return @modify modifications..., transform if modifications.length > 0
   return transform
 
