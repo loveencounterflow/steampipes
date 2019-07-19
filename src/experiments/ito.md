@@ -13,6 +13,7 @@ Objects with three properties `{ i, t, o, }`, hence called I.T.O. or ITO objects
 
 Mnemnonic 糸 (いと)
 
+**use `{ i: -> }`, `{ i: ( c ) -> }` for sinks?**—i.e. put function into input position
 
 |    | i                      | t            | o                    |                                        |
 |:---|:-----------------------|:-------------|:---------------------|:---------------------------------------|
@@ -73,7 +74,12 @@ log collector_1 # [ 2, 'a', 4, 'b', 6, 'c', ]
 log collector_2 # [ 2, 'A', 4, 'B', 6, 'C', ]
 ```
 
+* Three signatures:
 
+  <!-- * `->` no arguments: functions to be called on each data item -->
+  * `( d ) ->` one argument: for observers
+  * `( d, send ) ->` two arguments: for synchronous transforms
+  * `( d, send, done ) ->` three arguments: for asynchronous transforms
 
 
 
