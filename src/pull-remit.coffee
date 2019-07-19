@@ -140,7 +140,6 @@ echo                      = CND.echo.bind CND
   #.........................................................................................................
   drain                 = transforms[ transforms.length - 1 ]
   duct.buckets          = buckets = ( transforms[ idx ].sink for idx in [ 1 ... transforms.length - 1 ] )
-  debug 'µ12009', transforms
   duct.buckets.push drain.sink if drain.use_sink
   duct.has_ended        = false
   local_sink            = null
