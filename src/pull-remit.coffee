@@ -257,10 +257,8 @@ echo                      = CND.echo.bind CND
   first_bucket  = duct.buckets[ 0 ]
   first_bucket.splice first_bucket.length, 0, source.buffer...
   ### Process any data as may have accumulated at this point: ###
-  if duct.mode is 'async'
-    await duct.exhaust_async_pipeline()
-  else
-    duct.exhaust_pipeline()
+  if duct.mode is 'async' then  await duct.exhaust_async_pipeline()
+  else                          duct.exhaust_pipeline()
   return null
 
 
