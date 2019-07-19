@@ -85,6 +85,10 @@ remit_defaults = Object.freeze
     has_returned = true
     return null
   #.........................................................................................................
+  R.sink = transform.sink
+  R.send = transform.send
+  delete transform.sink
+  delete transform.send
   R[ @marks.send_last ] = @marks.send_last if send_last
   return R
 
