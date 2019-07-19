@@ -44,26 +44,27 @@ echo                      = CND.echo.bind CND
 #===========================================================================================================
 #
 #-----------------------------------------------------------------------------------------------------------
-@remit  = @$ = ( P..., transform ) ->
+@remit  = @$ = ( modifications..., transform ) ->
   validate.function transform
   throw new Error "µ20123 transform arity #{arity} not implemented" unless ( arity = transform.length ) is 2
-  # transform.sink   ?=  []
-  # transform.send   ?=  ( d ) -> ...
-  return @modify P..., transform if P.length > 0
+  unless transform.sink?
+    transform.sink    = sink = []
+    transform.send    = sink.push
+  unless transform.send?
+    throw new Error "µ98897 transform cannot have property `send()` but no sink"
+  return @modify modifications..., transform if modifications.length > 0
   return transform
 
 #-----------------------------------------------------------------------------------------------------------
-@$async = ( method ) ->
+@$async = ( transform ) ->
   ### TAINT incomplete implementation: surround, leapfrog arguments missing ###
-  throw new Error "µ77644 surround arguments not yet implemented" unless arguments.length is 1
-  throw new Error "µ77644 method arity #{arity} not implemented" unless ( arity = method.length ) is 3
+  throw new Error "µ77644 modifications not yet implemented" unless arguments.length is 1
+  throw new Error "µ77644 transform arity #{arity} not implemented" unless ( arity = transform.length ) is 3
   resolve = null
-  done    = ->
-    throw new Error "µ82081 arguments not allowed" unless arguments.length is 0
-    resolve()
-  R = ( d, send ) => return new Promise ( resolve_ ) =>
-    resolve = resolve_
-    await method d, send, done
+  R       = ( d, send ) => return new Promise ( r_ ) => resolve = r_; await transform d, send, done
+  R.sink  = sink = []
+  R.send  = send = sink.push
+  R.done  = done = -> resolve()
   R[ @marks.async ] = @marks.async
   return R
 
