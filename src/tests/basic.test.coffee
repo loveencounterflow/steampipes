@@ -185,6 +185,8 @@ jr                        = JSON.stringify
   result    = []
   pipeline  = []
   pipeline.push [ 1, 2, 3, ]
+  # debug 'µ20922', t = $ ( d, send ) -> info 'µ1', d; send d + 10
+  # debug 'µ20922', ( k for k of t )
   pipeline.push $ ( d, send ) -> info 'µ1', d; send d + 10
   pipeline.push $ ( d, send ) -> info 'µ2', d; send d; send d + 10
   pipeline.push $ ( d, send ) -> info 'µ3', d; result.push d; send d
