@@ -45,11 +45,11 @@ remit_defaults = Object.freeze
   return settings
 
 #-----------------------------------------------------------------------------------------------------------
-@modify = ( P..., transform ) ->
+@modify = ( modifications..., transform ) ->
   ### Can always call `modify $ ( d, send ) -> ...` with no effect: ###
-  return transform if P.length is 0
+  return transform if modifications.length is 0
   #.........................................................................................................
-  settings              = @_get_remit_settings Object.assign {}, remit_defaults, P...
+  settings              = @_get_remit_settings Object.assign {}, remit_defaults, modifications...
   self                  = null
   do_leapfrog           = settings.leapfrog
   data_first            = settings.first
