@@ -13,8 +13,8 @@ FS                        = require 'fs'
 # TO_NODE_STREAM            = require '../deps/pull-stream-to-stream-patched'
 # TO_NODE_STREAM            = require 'pull-stream-to-stream'
 defer                     = setImmediate
-types                     = require './types'
 { jr }                    = CND
+types                     = require './types'
 { isa
   validate
   type_of }               = types
@@ -35,23 +35,76 @@ types                     = require './types'
 #   #.........................................................................................................
 #   return @read_from_nodejs_stream ( FS.createReadStream path, options )
 
-# #-----------------------------------------------------------------------------------------------------------
-# @read_chunks_from_file = ( path, byte_count ) ->
-#   unless ( CND.isa_number byte_count ) and ( byte_count > 0 ) and ( byte_count is parseInt byte_count )
-#     throw new Error "expected positive integer number, got #{rpr byte_count}"
-#   pfy           = ( require 'util' ).promisify
-#   source        = @new_push_source()
-#   #.........................................................................................................
-#   defer =>
-#     fd    = await ( pfy FS.open ) path, 'r'
-#     read  = pfy FS.read
-#     loop
-#       buffer = Buffer.alloc byte_count
-#       await read fd, buffer, 0, byte_count, null
-#       source.send buffer
-#     return null
-#   #.........................................................................................................
-#   return source
+#-----------------------------------------------------------------------------------------------------------
+@read_from_file = ( path, byte_count = 65536 ) ->
+  validate.positive_integer byte_count
+  pfy           = ( require 'util' ).promisify
+  source        = @new_push_source()
+  #.........................................................................................................
+  defer =>
+    fd    = await ( pfy FS.open ) path, 'r'
+    read  = pfy FS.read
+    loop
+      buffer      = Buffer.alloc byte_count
+      bytes_read  = ( await read fd, buffer, 0, byte_count, null ).bytesRead
+      break if bytes_read is 0
+      source.send if bytes_read < byte_count then ( buffer.slice 0, bytes_read ) else buffer
+    source.end()
+    return null
+  #.........................................................................................................
+  return source
+
+#-----------------------------------------------------------------------------------------------------------
+@$split = ( splitter = '\n' ) ->
+  ### thx to https://github.com/maxogden/binary-split/blob/master/index.js ###
+  validate.nonempty_text splitter
+  is_buffer = Buffer.isBuffer
+  matcher   = Buffer.from splitter
+  buffered  = null
+  last      = Symbol 'last'
+  #.........................................................................................................
+  find_first_match = ( buffer, offset ) ->
+    return -1 if offset >= buffer.length
+    for i in [ offset ... buffer.length ] by +1
+      if buffer[ i ] is matcher[ 0 ]
+        if matcher.length > 1
+          fullMatch = true
+          j = i
+          k = 0
+          while j < i + matcher.length
+            if buffer[ j ] isnt matcher[ k ]
+              fullMatch = false
+              break
+            j++
+            k++
+          return j - matcher.length if fullMatch
+        else
+          break
+    return i + matcher.length - 1
+  #.........................................................................................................
+  return @$ { last, }, ( d, send ) ->
+    if d is last
+      send buffered if buffered?
+      return
+    throw "µ23211 expected a buffer, got a #{type_of splitter}" unless is_buffer d
+    offset    = 0
+    lastMatch = 0
+    if buffered?
+      d         = Buffer.concat [ buffered, d, ]
+      offset    = buffered.length
+      buffered  = null
+    loop
+      idx = find_first_match d, offset - matcher.length + 1
+      if idx >= 0 and idx < d.length
+        send d.slice lastMatch, idx
+        offset    = idx + matcher.length
+        lastMatch = offset
+      else
+        buffered  = d.slice(lastMatch)
+        break
+    return null
+
+
 
 #-----------------------------------------------------------------------------------------------------------
 @tee_write_to_file = ( path, options ) ->
