@@ -31,6 +31,10 @@ SP                        = require '../..'
   $watch
   $show  }                = SP.export()
 defer                     = setImmediate
+types                     = require '../types'
+{ isa
+  validate
+  type_of }               = types
 
 #-----------------------------------------------------------------------------------------------------------
 @[ "write to file sync" ] = ( T, done ) ->
@@ -64,10 +68,70 @@ defer                     = setImmediate
   done()
   return null
 
+#-----------------------------------------------------------------------------------------------------------
+@[ "read_from_file" ] = ( T, done ) ->
+  ### TAINT use proper tmpfile ###
+  path      = __filename
+  probe     = null
+  matcher   = null
+  error     = null
+  sink      = []
+  matcher   = FS.readFileSync path, { encoding: 'utf-8', }
+  #.......................................................................................................
+  pipeline = []
+  pipeline.push SP.read_from_file path, 10
+  pipeline.push $show()
+  pipeline.push SP.$drain ( sink ) ->
+    result  = ( Buffer.concat sink ).toString 'utf-8'
+    T.eq result, matcher
+    help 'ok'
+    done()
+  SP.pull pipeline...
+  return null
+
+#-----------------------------------------------------------------------------------------------------------
+as_chunked_buffers = ( text, size ) ->
+  validate.text text
+  validate.positive_integer size
+  R       = []
+  buffer  = Buffer.from text
+  for idx in [ 0 ... buffer.length ] by size
+    R.push buffer.slice idx, idx + size
+  return R
+
+#-----------------------------------------------------------------------------------------------------------
+@[ "$split" ] = ( T, done ) ->
+  ### TAINT use proper tmpfile ###
+  path      = __filename
+  probes_and_matchers = [
+    [[ """A text that\nextends over several lines\näöüÄÖÜß""", '\n'],null,null]
+    [[ """A text that\nextends over several lines\näöüÄÖÜß""", 'ä'],null,null]
+    [[ """A text that\nextends over several lines\näöüÄÖÜß""", 'ö'],null,null]
+    ]
+  for [ probe, matcher, error, ] in probes_and_matchers
+    [ text
+      splitter ]  = probe
+    matcher       = text.split splitter
+    await T.perform [ text, splitter, ], matcher, error, -> return new Promise ( resolve, reject ) ->
+      values        = as_chunked_buffers text, 3
+      pipeline      = []
+      pipeline.push values
+      pipeline.push SP.$split splitter
+      pipeline.push $watch ( d ) -> info jr d
+      # pipeline.push SP.tee_write_to_file path
+      pipeline.push SP.$drain ( result ) -> resolve result
+      SP.pull pipeline...
+      return null
+  #.........................................................................................................
+  done()
+  return null
+
 
 ############################################################################################################
 unless module.parent?
   test @, 'timeout': 30000
+  # test @[ "read_from_file" ]
+  # test @[ "$split" ]
 
 
 
