@@ -23,18 +23,6 @@ types                     = require './types'
 
 #===========================================================================================================
 # READ FROM, WRITE TO FILES, NODEJS STREAMS
-# #-----------------------------------------------------------------------------------------------------------
-# @read_from_file = ( path, options ) ->
-#   ### TAINT consider using https://pull-stream.github.io/#pull-file-reader instead ###
-#   switch ( arity = arguments.length )
-#     when 1 then null
-#     when 2
-#       if CND.isa_function options
-#         [ path, options, on_end, ] = [ path, null, options, ]
-#     else throw new Error "µ9983 expected 1 or 2 arguments, got #{arity}"
-#   #.........................................................................................................
-#   return @read_from_nodejs_stream ( FS.createReadStream path, options )
-
 #-----------------------------------------------------------------------------------------------------------
 @read_from_file = ( path, byte_count = 65536 ) ->
   validate.positive_integer byte_count
@@ -106,8 +94,6 @@ types                     = require './types'
         buffered  = d.slice(lastMatch)
         break
     return null
-
-
 
 #-----------------------------------------------------------------------------------------------------------
 @tee_write_to_file = ( path, options ) ->
