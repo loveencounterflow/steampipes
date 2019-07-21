@@ -55,9 +55,10 @@ types                     = require './types'
   return source
 
 #-----------------------------------------------------------------------------------------------------------
-@$split = ( splitter = '\n' ) ->
+@$split = ( splitter = '\n', decode = true ) ->
   ### thx to https://github.com/maxogden/binary-split/blob/master/index.js ###
   validate.nonempty_text splitter
+  validate.boolean decode
   is_buffer = Buffer.isBuffer
   matcher   = Buffer.from splitter
   buffered  = null
@@ -84,7 +85,8 @@ types                     = require './types'
   #.........................................................................................................
   return @$ { last, }, ( d, send ) ->
     if d is last
-      send buffered if buffered?
+      if buffered?
+        send if decode then ( buffered.toString 'utf-8' ) else buffered
       return
     throw "µ23211 expected a buffer, got a #{type_of splitter}" unless is_buffer d
     offset    = 0
@@ -96,7 +98,8 @@ types                     = require './types'
     loop
       idx = find_first_match d, offset - matcher.length + 1
       if idx >= 0 and idx < d.length
-        send d.slice lastMatch, idx
+        e         = d.slice lastMatch, idx
+        send if decode then ( e.toString 'utf-8' ) else e
         offset    = idx + matcher.length
         lastMatch = offset
       else
