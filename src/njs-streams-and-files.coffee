@@ -25,6 +25,7 @@ types                     = require './types'
 # READ FROM, WRITE TO FILES, NODEJS STREAMS
 #-----------------------------------------------------------------------------------------------------------
 @read_from_file = ( path, byte_count = 65536 ) ->
+  ### TAINT use settings object ###
   validate.positive_integer byte_count
   pfy           = ( require 'util' ).promisify
   source        = @new_push_source()
