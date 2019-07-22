@@ -80,7 +80,7 @@ types                     = require '../types'
   #.......................................................................................................
   pipeline = []
   pipeline.push SP.read_from_file path, 10
-  pipeline.push $show()
+  pipeline.push $show { title: 'µ33321', }
   pipeline.push SP.$drain ( sink ) ->
     result  = ( Buffer.concat sink ).toString 'utf-8'
     T.eq result, matcher
@@ -90,7 +90,7 @@ types                     = require '../types'
   return null
 
 #-----------------------------------------------------------------------------------------------------------
-as_chunked_buffers = ( text, size ) ->
+@_as_chunked_buffers = ( text, size ) ->
   validate.text text
   validate.positive_integer size
   R       = []
@@ -112,8 +112,8 @@ as_chunked_buffers = ( text, size ) ->
     [ text
       splitter ]  = probe
     matcher       = text.split splitter
-    await T.perform [ text, splitter, ], matcher, error, -> return new Promise ( resolve, reject ) ->
-      values        = as_chunked_buffers text, 3
+    await T.perform [ text, splitter, ], matcher, error, => return new Promise ( resolve, reject ) =>
+      values        = @_as_chunked_buffers text, 3
       pipeline      = []
       pipeline.push values
       pipeline.push SP.$split splitter
@@ -123,6 +123,59 @@ as_chunked_buffers = ( text, size ) ->
       SP.pull pipeline...
       return null
   #.........................................................................................................
+  done()
+  return null
+
+
+#-----------------------------------------------------------------------------------------------------------
+@[ "demo" ] = ( T, done ) ->
+  probe       = ''
+  probe      += '[["白金ごるふ場","しろがねごるふじょう","白金ゴルフ場 [しろがねゴルフじょう] /Shirogane golf links (p)/"],'
+  probe      += '["白金だむ","しろがねだむ","白金ダム [しろがねダム] /Shirogane dam (p)/"],'
+  probe      += '["白金郁夫","しらかねいくお","Shirakane Ikuo (h)"],'
+  probe      += '["白金温泉","しろがねおんせん","Shiroganeonsen (p)"],'
+  probe      += '["白金橋","しろがねばし","Shiroganebashi (p)"],'
+  probe      += '["白金原","しらかねばる","Shirakanebaru (p)"],'
+  probe      += '["白金高輪駅","しろかねたかなわえき","Shirokanetakanawa Station (st)"],'
+  probe      += '["白金山","しらかねやま","Shirakaneyama (u)"],'
+  probe      += '["白金川","しろがねがわ","Shiroganegawa (u)"],'
+  probe      += '["奉輔","ともすけ","Tomosuke (u)"],'
+  probe      += '["奉免","ほうめ","Houme (p)"],'
+  probe      += '["奉免","ほうめん","Houmen (p)"],'
+  probe      += '["奉免町","ほうめんまち","Houmenmachi (p)"],'
+  probe      += '["奉雄","ともお","Tomoo (g)"],'
+  probe      += '["奉養","ほうよう","Houyou (s)"],'
+  probe      += '["奉廣","ともひろ","Tomohiro (g)"],'
+  probe      += '["奉鉉","ほうげん","Hougen (g)"],'
+  probe      += '["宝","たから","Takara (s,m,f)"],'
+  probe      += '["宝","たからさき","Takarasaki (s)"],'
+  probe      += '["宝","とみ","Tomi (s)"],'
+  probe      += '["宝","ひじり","Hijiri (f)"],'
+  probe      += '["宝","みち","Michi (f)"],'
+  probe      += '["宝が丘","たからがおか","Takaragaoka (p)"],'
+  probe      += '["宝が池","たからがいけ","Takaragaike (p)"],'
+  probe      += '["宝とも子","たからともこ","Takara Tomoko (1921.9.23-2001.8.2) (h)"],'
+  probe      += '["宝の草池","たからのくさいけ","Takaranokusaike (p)"]]'
+  matcher     = probe
+  error       = null
+  await T.perform probe, matcher, error, => return new Promise ( resolve, reject ) =>
+    source    = @_as_chunked_buffers probe, 10
+    splitter  = '"],["'
+    pipeline  = []
+    # pipeline.push SP.read_from_file path, 10
+    pipeline.push source
+    pipeline.push SP.$split splitter
+    pipeline.push $ ( d, send ) ->
+      ### TAINT need only be done on first, last datom ###
+      d = d.replace /^\[+"/, ''
+      d = d.replace /"\]+$/, ''
+      send d
+    pipeline.push $ ( d, send ) -> send JSON.parse '["' + d + '"]'
+    # pipeline.push $watch ( d ) -> info jr d
+    pipeline.push SP.$drain ( sink ) ->
+      # debug rpr jr sink
+      resolve jr sink
+    SP.pull pipeline...
   done()
   return null
 
