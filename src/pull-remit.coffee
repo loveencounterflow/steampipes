@@ -158,7 +158,6 @@ echo                      = CND.echo.bind CND
   exhaust_pipeline = =>
     loop
       data_count    = 0
-      # for transform, idx in transforms
       for idx in tf_idxs
         continue if ( local_source = buckets[ idx ] ).length is 0
         transform       = transforms[  idx + 1 ]
@@ -216,7 +215,6 @@ echo                      = CND.echo.bind CND
   #.........................................................................................................
   for d from duct.transforms[ 0 ]
     break if duct.has_ended
-    # continue if d is @signals.discard
     first_bucket.push d
     duct.exhaust_pipeline()
   #.........................................................................................................
@@ -235,7 +233,6 @@ echo                      = CND.echo.bind CND
   #.........................................................................................................
   for d from duct.transforms[ 0 ]
     break if duct.has_ended
-    # continue if d is @signals.discard
     first_bucket.push d
     await duct.exhaust_async_pipeline()
   #.........................................................................................................
