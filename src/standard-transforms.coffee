@@ -108,4 +108,10 @@ assign                    = Object.assign
 e.g. `$surround { first: 'first!', between: 'to appear in-between two values', }`. ###
 @$surround = ( settings ) -> @$ settings, ( d, send ) => send d
 
+#-----------------------------------------------------------------------------------------------------------
+@leapfrog = ( jumper, transform ) -> @$ { leapfrog: jumper, }, transform
+
+
+
+
 
