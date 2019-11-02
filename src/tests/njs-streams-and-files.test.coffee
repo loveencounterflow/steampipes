@@ -90,7 +90,7 @@ types                     = require '../types'
   return null
 
 #-----------------------------------------------------------------------------------------------------------
-@_as_chunked_buffers = ( text, size ) ->
+_as_chunked_buffers = ( text, size ) ->
   validate.text text
   validate.positive_integer size
   R       = []
@@ -113,7 +113,7 @@ types                     = require '../types'
       splitter ]  = probe
     matcher       = text.split splitter
     await T.perform [ text, splitter, ], matcher, error, => return new Promise ( resolve, reject ) =>
-      values        = @_as_chunked_buffers text, 3
+      values        = _as_chunked_buffers text, 3
       pipeline      = []
       pipeline.push values
       pipeline.push SP.$split splitter
@@ -159,7 +159,7 @@ types                     = require '../types'
   matcher     = probe
   error       = null
   await T.perform probe, matcher, error, => return new Promise ( resolve, reject ) =>
-    source    = @_as_chunked_buffers probe, 10
+    source    = _as_chunked_buffers probe, 10
     splitter  = '"],["'
     pipeline  = []
     # pipeline.push SP.read_from_file path, 10
