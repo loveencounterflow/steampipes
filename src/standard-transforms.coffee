@@ -90,6 +90,12 @@ assign                    = Object.assign
   throw new Error "µ18244 expected one or two arguments, got #{arity}"
 
 #-----------------------------------------------------------------------------------------------------------
+@$filter = ( filter ) ->
+  unless ( type = CND.type_of filter ) is 'function'
+    throw new Error "^steampipes/$filter@5663^ expected a function, got a #{type}"
+  return @$ ( data, send ) => if ( filter data ) then send data
+
+#-----------------------------------------------------------------------------------------------------------
 @$as_text = ( settings ) -> ( d, send ) =>
   serialize = settings?[ 'serialize' ] ? JSON.stringify
   return @$map ( data ) => serialize data

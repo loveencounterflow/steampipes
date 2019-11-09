@@ -515,6 +515,26 @@ jr                        = JSON.stringify
   done()
   return null
 
+#-----------------------------------------------------------------------------------------------------------
+@[ "$filter" ] = ( T, done ) ->
+  [ probe, matcher, error, ] = [[0,1,2,3,4,5,6,7,8,9,],[1,3,5,7,9,],null]
+  await T.perform probe, matcher, error, -> return new Promise ( resolve, reject ) ->
+    R           = []
+    source      = probe
+    #.......................................................................................................
+    pipeline    = []
+    pipeline.push source
+    pipeline.push SP.$filter ( d ) -> ( d %% 2 ) is 1
+    # pipeline.push SP.$watch ( d ) -> info xrpr d
+    pipeline.push SP.$drain ( values ) ->
+      # urge values
+      resolve values
+    SP.pull pipeline...
+    return null
+  #.........................................................................................................
+  done()
+  return null
+
 ###
 
 #-----------------------------------------------------------------------------------------------------------
@@ -847,7 +867,8 @@ jr                        = JSON.stringify
 
 ############################################################################################################
 unless module.parent?
-  test @, 'timeout': 30000
+  # test @, 'timeout': 30000
+  test @[ "$filter" ]
   # test @[ "remit 1"                         ]
   # test @[ "drain with result"               ]
   # test @[ "remit 2"                         ]
