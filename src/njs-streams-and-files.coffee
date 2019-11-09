@@ -77,7 +77,7 @@ types                     = require './types'
       if buffered?
         send if decode then ( buffered.toString 'utf-8' ) else buffered
       return
-    throw "µ23211 expected a buffer, got a #{type_of d}" unless is_buffer d
+    throw new Error "µ23211 expected a buffer, got a #{type_of d}" unless is_buffer d
     offset    = 0
     lastMatch = 0
     if buffered?
