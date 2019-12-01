@@ -89,6 +89,8 @@ echo                      = CND.echo.bind CND
 @_flatten_transforms = ( transforms, R = null ) ->
   R ?= []
   for transform in transforms
+    ### TAINT how can `undefined` end up in `transforms`??? ###
+    # continue unless transform?
     if transform[ @marks.isa_duct ]?
       ### TAINT necessary to do this recursively? ###
       R.push t for t in transform.transforms
@@ -208,6 +210,7 @@ echo                      = CND.echo.bind CND
 #-----------------------------------------------------------------------------------------------------------
 @pull = ( transforms... ) ->
   duct = @_pull transforms...
+  duct.transforms[ 0 ].start() if isa.function duct.transforms[ 0 ].start
   return duct unless duct.type is 'circuit'
   return @_pull_async duct if duct.mode is 'async'
   return @_push duct if duct.transforms[ 0 ][ @marks.isa_pusher ]?
@@ -254,6 +257,14 @@ echo                      = CND.echo.bind CND
   ### Process any data as may have accumulated at this point: ###
   if duct.mode is 'async' then  await duct.exhaust_async_pipeline()
   else                          duct.exhaust_pipeline()
+  # debug '^333121^', 'duct', duct
+  # debug '^333121^', 'duct.has_ended', duct.has_ended
+  # debug '^45899^', 'source.has_ended', duct.has_ended or source.has_ended
+  ### TAINT code duplication ###
+  if duct.has_ended or source.has_ended
+    drain = duct.transforms[ duct.transforms.length - 1 ]
+    if ( on_end = drain.on_end )?
+      if drain.call_with_datoms then drain.on_end drain.sink else drain.on_end()
   return null
 
 

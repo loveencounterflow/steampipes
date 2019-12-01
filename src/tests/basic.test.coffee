@@ -359,6 +359,29 @@ jr                        = JSON.stringify
   return null
 
 #-----------------------------------------------------------------------------------------------------------
+@[ "end push source (2)" ] = ( T, done ) ->
+  [ probe, matcher, error, ] = [["what","a","lot","of","little","bottles"],["what","a","lot","of","little","bottles"],null]
+  await T.perform probe, matcher, error, -> return new Promise ( resolve, reject ) ->
+    R         = []
+    source    = SP.new_push_source()
+    #.......................................................................................................
+    for word in probe
+      source.send word
+    source.end()
+    #.......................................................................................................
+    pipeline  = []
+    pipeline.push source
+    pipeline.push SP.$watch ( d ) -> info xrpr d
+    pipeline.push SP.$collect { collector: R, }
+    pipeline.push SP.$watch ( d ) -> info xrpr d
+    pipeline.push SP.$drain -> help 'ok'; resolve R
+    SP.pull pipeline...
+    return null
+  #.........................................................................................................
+  done()
+  return null
+
+#-----------------------------------------------------------------------------------------------------------
 @[ "duct_from_transforms" ] = ( T, done ) ->
   do =>
     r = SP._new_duct []
@@ -537,28 +560,6 @@ jr                        = JSON.stringify
 
 ###
 
-#-----------------------------------------------------------------------------------------------------------
-@[ "end push source (2)" ] = ( T, done ) ->
-  # The proper way to end a push source is to call `source.end()`.
-  [ probe, matcher, error, ] = [["what","a","lot","of","little","bottles","stop"],["what","a","lot","of","little","bottles"],null]
-  await T.perform probe, matcher, error, -> return new Promise ( resolve, reject ) ->
-    R         = []
-    drainer   = -> help 'ok'; resolve R
-    source    = SP.new_push_source()
-    pipeline  = []
-    pipeline.push source
-    pipeline.push SP.$watch ( d ) -> info xrpr d
-    pipeline.push $ ( d, send ) -> if d is 'stop' then source.end() else send d
-    pipeline.push SP.$collect { collector: R, }
-    pipeline.push SP.$watch ( d ) -> info xrpr d
-    pipeline.push SP.$drain drainer
-    pull pipeline...
-    for word in probe
-      source.send word
-    return null
-  #.........................................................................................................
-  done()
-  return null
 
 #-----------------------------------------------------------------------------------------------------------
 @[ "end push source (3)" ] = ( T, done ) ->
@@ -868,7 +869,8 @@ jr                        = JSON.stringify
 ############################################################################################################
 unless module.parent?
   # test @, 'timeout': 30000
-  test @[ "$filter" ]
+  # test @[ "$filter" ]
+  test @[ "end push source (2)"             ]
   # test @[ "remit 1"                         ]
   # test @[ "drain with result"               ]
   # test @[ "remit 2"                         ]
@@ -882,7 +884,6 @@ unless module.parent?
   # test @[ "watch with end detection 1"      ]
   # test @[ "watch with end detection 2"      ]
   # test @[ "end push source (1)"             ]
-  # test @[ "end push source (2)"             ]
   # test @[ "end push source (3)"             ]
   # test @[ "end push source (4)"             ]
   # test @[ "wrap FS object for sink"         ]

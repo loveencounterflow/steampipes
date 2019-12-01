@@ -35,12 +35,14 @@ assign                    = Object.assign
     R.duct.exhaust_pipeline()
     return null
   end = =>
+    R.has_ended = true
+    return unless R.duct? ### NOTE: ensuring that multiple calls to `end()` will be OK ###
     R.duct.buckets[ 0 ].push @signals.last
     R.duct.exhaust_pipeline()
     drain = R.duct.transforms[ R.duct.transforms.length - 1 ]
     if ( on_end = drain.on_end )?
       if drain.call_with_datoms then drain.on_end drain.sink else drain.on_end()
     return R.duct = null
-  R = { [@marks.isa_pusher], send, end, buffer: [], duct: null, }
+  R = { [@marks.isa_pusher], send, end, buffer: [], duct: null, has_ended: false, }
   return R
 
