@@ -191,6 +191,12 @@ catch error
 ```
 
 
+## Updates
+
+* If source has a method `start()`, it will be called when `SP.pull pipeline...` is called; this enables
+  push sources to delay issuing data until the pipeline is ready to consume it
+
+
 ## To Do
 
 * [ ] cf `### TAINT how can `undefined` end up in `transforms`??? ###` in `pull-remit.coffee`: Fix bug
