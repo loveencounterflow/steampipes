@@ -189,3 +189,35 @@ catch error
   warn "the stream was aborted"
 ...
 ```
+
+
+## To Do
+
+* [ ] cf `### TAINT how can `undefined` end up in `transforms`??? ###` in `pull-remit.coffee`: Fix bug
+* [ ] somehow notify sources (especiall push sources) that pipeline has been pulled (so data may start to
+  flow); otherwise, if ultimate source is e.g. NodeJS connected via event handlers, those underlying sources
+  will start on definition, not on pipeline completion, and will spill arbitrary amounts of data into
+  SteamPipe buffers.
+* [ ] compare:
+  ```coffee
+  source      = SP.new_push_source()
+  source.send 1
+  source.send 2
+  pipeline    = []
+  pipeline.push source
+  pipeline.push SP.$show()
+  pipeline.push $drain ->
+    urge '^2262^', "demo_stream ended"
+    resolve()
+  source.end() # (1)
+  SP.pull pipeline...
+  # source.end() # (2)
+  ```
+  With `(1)`, the drain condition never triggers; only `(2)` works as intended; i.o.w. `source.end()` must
+  not be called before `SP.pull()`. This is not acceptable.
+* [ ] consider whether `$drain()` should allow to appear mid-stream (it would then pull data from upstream,
+  downstream must rely on own `$drain()` to obtain data).
+
+
+
+
