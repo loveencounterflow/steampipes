@@ -26,6 +26,7 @@
   },
   "homepage": "https://github.com/loveencounterflow/steampipes",
   "dependencies": {
+    "@uppy/fs-tail-stream": "^1.2.0",
     "cnd": "^4.6.0",
     "intertype": "^2.5.0",
     "letsfreezethat": "^2.2.5",
