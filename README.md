@@ -1,22 +1,32 @@
+
+
+# SteamPipes
+
+
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 **Table of Contents**  *generated with [DocToc](https://github.com/thlorenz/doctoc)*
 
-- [SteamPipes](#steampipes)
-  - [Motivation](#motivation)
-  - [Notes](#notes)
-    - [Ducts](#ducts)
-      - [Duct Configurations](#duct-configurations)
-    - [Behavior for Ending Streams](#behavior-for-ending-streams)
-    - [Aborting Streams](#aborting-streams)
+- [Motivation](#motivation)
+- [How to Construct Sources, Transforms, and Sinks](#how-to-construct-sources-transforms-and-sinks)
+  - [Transforms](#transforms)
+  - [Sinks](#sinks)
+- [Asynchronous Sources and Transforms](#asynchronous-sources-and-transforms)
+- [Ducts](#ducts)
+  - [Duct Configurations](#duct-configurations)
+- [Behavior for Ending Streams](#behavior-for-ending-streams)
+- [Aborting Streams](#aborting-streams)
+- [Updates](#updates)
+- [To Do](#to-do)
+  - [To Do: Railway-Oriented Programming](#to-do-railway-oriented-programming)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 
 
-# SteamPipes
 
-**Fast, simple data pipelines** built from first principles.
+**Fast, simple data pipelines** built from first principles. Basically, [datomic
+transducers](https://www.youtube.com/watch?v=6mTbuzafcII).
 
 SteamPipes is the successor to [PipeStreams](https://github.com/loveencounterflow/pipestreams) and
 [PipeDreams](https://github.com/loveencounterflow/pipedreams). PipeStreams was originally built on top of
@@ -197,6 +207,7 @@ catch error
   push sources to delay issuing data until the pipeline is ready to consume it
 
 
+
 ## To Do
 
 * [ ] cf `### TAINT how can `undefined` end up in `transforms`??? ###` in `pull-remit.coffee`: Fix bug
@@ -204,6 +215,8 @@ catch error
   flow); otherwise, if ultimate source is e.g. NodeJS connected via event handlers, those underlying sources
   will start on definition, not on pipeline completion, and will spill arbitrary amounts of data into
   SteamPipe buffers.
+* [ ] consider to adapt [Rich Hickey's terminology](https://youtu.be/6mTbuzafcII?t=878) and call transforms
+  'transducers' (it's the more pipestreamy word)
 * [ ] compare:
   ```coffee
   source      = SP.new_push_source()
@@ -223,7 +236,66 @@ catch error
   not be called before `SP.pull()`. This is not acceptable.
 * [ ] consider whether `$drain()` should allow to appear mid-stream (it would then pull data from upstream,
   downstream must rely on own `$drain()` to obtain data).
+* [ ] reflect once more about depth-first vs. breadth-first **doling mode**: (all sources and, so) async
+  sources (, too,) wait before doling out the next item until it has been **transduced** (dealt with)
+  completely; shouldn't asynchronous transforms behave likewise? Async transforms do have a `done()` method
+  to signal finishing, synchronous transforms don't have that, so it is not clear how to deal with a
+  situation where a transform happens to decide it doesn't want to `send()` anything (although, the
+  transform does return (stop running), so that might be a way)
+ * [ ] explain why using only `yield` instead of `send()` is not a good idea
 
+
+
+### To Do: Railway-Oriented Programming
+
+* https://zohaib.me/railway-programming-pattern-in-elixir/
+* https://fsharpforfunandprofit.com/rop/
+* https://github.com/zorbash/opus
+
+Transform categorization: functions may
+
+* acc. to result arity
+  * give back exactly one value for each input that we do care about (-> `$map()`)
+  * give back exactly one value for each input that we do not care about (-> `$watch()`)
+  * give back any number of values (-> `$`/`remit()`)
+  * never give back any value (-> `$watch()`)
+
+* acc. to iterability
+  * yield
+  * return
+
+* acc. to synchronicity
+  * be synchronous
+  * be asynchronous
+
+* acc. to happiness
+  * give back sad value on failure
+  * always give back happy failure, using `throw` for sad results
+  * return a sentinel value / error code (like JS `[].indexOf()`)
+
+* pipeline definition may take on this form:
+
+  ```coffee
+  ¶ = ( pipeline = [] ).push.bind pipeline
+  ¶ tee       other_pipeline, ( d ) -> 110 <= d <= 119    # optional filter, all `d`s stay in this pipeline, some also in other
+  ¶ switch    other_pipeline, ( d ) -> 110 <= d <= 119    # obligatory filter, each `d` in only one pipeline
+  ¶ watch     ( d ) -> ...                                # return value thrown away (does that respect async functions?)
+  ¶ guard     -1, $indexOf 'helo'                         # guard with filter value, saddens value when `true <- CND.equals(...)`
+  ¶ guard     ( ( d ) -> ... ), indexOf 'helo'            # guard with filter function, saddens value when `true <- filter()`
+  ¶ trycatch  map ( d       ) -> throw new Error "whaat" if d % 2 is 0; return d * 3 + 1
+  ¶ trycatch  $   ( d, send ) -> throw new Error "whaat" if d % 2 is 0; send d; send d * 3 + 1
+  ¶ if_sad $show_warning()
+  ¶ if_sad $ignore()
+  ¶ drain()
+  pull ¶
+  ```
+* pipe processing never calls any transform with sad value (except for those explicitly configured to accept
+  those)
+* but all sad values are still passed on, cause errors at pipeline end (near drain) when not being filtered
+  out
+* must **not** swallow exceptions implicitly as that would promote silent failures
+* benefit: simplify logic a great deal
+* benefit: may record errors and try to move on, then complain with summary of everything that went wrong
 
 
 
