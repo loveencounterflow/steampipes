@@ -210,10 +210,10 @@ echo                      = CND.echo.bind CND
 #-----------------------------------------------------------------------------------------------------------
 @pull = ( transforms... ) ->
   duct = @_pull transforms...
-  #.........................................................................................................
-  ### TAINT `await` makes this an async method; is that a problem? ###
-  if isa.function           duct.transforms[ 0 ].start  then        duct.transforms[ 0 ].start()
-  else if isa.asyncfunction duct.transforms[ 0 ].start  then  await duct.transforms[ 0 ].start()
+  # #.........................................................................................................
+  # ### TAINT `await` makes this an async method; is that a problem? ###
+  # if isa.function           duct.transforms[ 0 ].start  then        duct.transforms[ 0 ].start()
+  # else if isa.asyncfunction duct.transforms[ 0 ].start  then  await duct.transforms[ 0 ].start()
   #.........................................................................................................
   return duct unless duct.type is 'circuit'
   return @_pull_async duct if duct.mode is 'async'

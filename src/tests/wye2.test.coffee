@@ -142,8 +142,8 @@ SP                        = require '../..'
 
 ############################################################################################################
 unless module.parent?
-  # test @, 'timeout': 30000
-  test @[ "leapfrogging compared to wye" ]
+  test @, 'timeout': 30000
+  # test @[ "leapfrogging compared to wye" ]
   # test @[ "wye 3" ]
 
 

@@ -870,13 +870,13 @@ jr                        = JSON.stringify
 unless module.parent?
   # test @, 'timeout': 30000
   # test @[ "$filter" ]
-  test @[ "end push source (2)"             ]
+  # test @[ "end push source (2)"             ]
   # test @[ "remit 1"                         ]
   # test @[ "drain with result"               ]
   # test @[ "remit 2"                         ]
   # test @[ "remit with end detection 1"      ]
   # test @[ "duct_from_transforms"            ]
-  # test @[ "composability (through)"                 ]
+  test @[ "composability (through)"                 ]
   # test @[ "composability (source)"                 ]
   # test @[ "composability (sink)" ]
   # test @[ "remit with end detection 2"      ]
