@@ -18,6 +18,12 @@ PATH                      = require 'path'
 FS                        = require 'fs'
 OS                        = require 'os'
 test                      = require 'guy-test'
+{ jr, }                   = CND
+#...........................................................................................................
+{ isa
+  validate
+  defaults
+  type_of }               = require '../types'
 #...........................................................................................................
 SP                        = require '../..'
 { $
@@ -138,13 +144,167 @@ SP                        = require '../..'
   done()
   return null
 
+#-----------------------------------------------------------------------------------------------------------
+@[ "wye construction (sync)" ] = ( T, done ) ->
+  probes_and_matchers = [
+    [["abc","UVWXYZ"],"abcUVWXYZ",null]
+    ]
+  for [ [ probe_A, probe_B, ], matcher, error, ] in probes_and_matchers
+    await T.perform [ probe_A, probe_B, ], matcher, error, -> return new Promise ( resolve, reject ) ->
+      # wye         = SP.new_wye()
+      last        = Symbol 'last'
+      #.....................................................................................................
+      source_A    = probe_A
+      A_has_ended = false
+      B_has_ended = false
+      pipeline_A  = []
+      pipeline_A.push source_A
+      pipeline_A.push $watch ( d ) -> help 'A', jr d
+      pipeline_A.push $ { last, }, ( d, send ) ->
+        if d is last
+          A_has_ended = true
+          return end_source_C()
+        source_C.send d
+      pipeline_A.push $drain -> whisper 'A'
+      #.....................................................................................................
+      source_B    = probe_B
+      pipeline_B  = []
+      pipeline_B.push source_B
+      pipeline_B.push $watch ( d ) -> urge 'B', jr d
+      pipeline_B.push $ { last, }, ( d, send ) ->
+        if d is last
+          B_has_ended = true
+          return end_source_C()
+        source_C.send d
+      pipeline_B.push $drain -> whisper 'B'
+      #.....................................................................................................
+      source_C    = SP.new_push_source()
+      pipeline_C  = []
+      pipeline_C.push source_C
+      pipeline_C.push $watch ( d ) -> info 'C', jr d
+      pipeline_C.push $drain ( Σ ) ->
+        whisper 'C', jr Σ
+        resolve Σ.join ''
+      #.....................................................................................................
+      end_source_C = ->
+        return unless ( A_has_ended and B_has_ended )
+        source_C.end()
+      #.....................................................................................................
+      # pipeline_A.push wye
+      duct_C  = SP.pull pipeline_C...
+      duct_A  = SP.pull pipeline_A...
+      duct_B  = SP.pull pipeline_B...
+      return null
+  #.........................................................................................................
+  done()
+  return null
+
+#-----------------------------------------------------------------------------------------------------------
+@[ "wye construction (async)" ] = ( T, done ) ->
+  probes_and_matchers = [
+    [["abc","UVWXYZ"],"aUbVcWXYZ",null]
+    ]
+  for [ [ probe_A, probe_B, ], matcher, error, ] in probes_and_matchers
+    await T.perform [ probe_A, probe_B, ], matcher, error, -> return new Promise ( resolve, reject ) ->
+      # wye         = SP.new_wye()
+      last        = Symbol 'last'
+      #.....................................................................................................
+      source_A    = probe_A
+      A_has_ended = false
+      B_has_ended = false
+      pipeline_A  = []
+      pipeline_A.push source_A
+      pipeline_A.push $watch ( d ) -> help 'A', jr d
+      pipeline_A.push $async ( d, send, done ) -> source_C.send d; done()
+      pipeline_A.push $ { last, }, ( d, send ) -> return unless d is last; A_has_ended = true; end_source_C()
+      pipeline_A.push $drain -> whisper 'A'
+      #.....................................................................................................
+      source_B    = probe_B
+      pipeline_B  = []
+      pipeline_B.push source_B
+      pipeline_B.push $watch ( d ) -> urge 'B', jr d
+      pipeline_B.push $async ( d, send, done ) -> source_C.send d; done()
+      pipeline_B.push $ { last, }, ( d, send ) -> return unless d is last; B_has_ended = true; end_source_C()
+      pipeline_B.push $drain -> whisper 'B'
+      #.....................................................................................................
+      source_C    = SP.new_push_source()
+      pipeline_C  = []
+      pipeline_C.push source_C
+      pipeline_C.push $watch ( d ) -> info 'C', jr d
+      pipeline_C.push $drain ( Σ ) ->
+        whisper 'C', jr Σ
+        resolve Σ.join ''
+      #.....................................................................................................
+      end_source_C = ->
+        return unless ( A_has_ended and B_has_ended )
+        source_C.end()
+      #.....................................................................................................
+      # pipeline_A.push wye
+      duct_C  = SP.pull pipeline_C...
+      duct_A  = SP.pull pipeline_A...
+      duct_B  = SP.pull pipeline_B...
+      return null
+  #.........................................................................................................
+  done()
+  return null
+
+#-----------------------------------------------------------------------------------------------------------
+@[ "wye construction (method)" ] = ( T, done ) ->
+  #.........................................................................................................
+  provide_new_wye = ->
+    last            = Symbol 'last'
+    @marks          = { isa_wye: Symbol 'isa_wye', } ### TAINT overwrites original attribute ###
+    _original_pull  = @pull
+
+    #-----------------------------------------------------------------------------------------------------------
+    @new_wye = ( settings, source ) ->
+      switch arity = arguments.length
+        when 1 then [ settings, source, ] = [ null, settings, ]
+        when 2 then null
+        else throw new Error "µ44578 expected 1 or 2 arguments, got #{arity}"
+      settings = { defaults.steampipes_new_wye_settings..., settings..., }
+      validate.steampipes_new_wye_settings settings
+      return { [@marks.isa_wye], settings, source, }
+
+    #-----------------------------------------------------------------------------------------------------------
+    @pull = ( transforms... ) ->
+      R = _original_pull.call @, transforms...
+      debug '^33342^', R
+      return R
+  provide_new_wye.apply SP
+  #.........................................................................................................
+  do =>
+    probes_and_matchers = [
+      [["abc","UVWXYZ"],"abcUVWXYZ",null]
+      ]
+    for [ [ probe_A, probe_B, ], matcher, error, ] in probes_and_matchers
+      await T.perform [ probe_A, probe_B, ], matcher, error, -> return new Promise ( resolve, reject ) ->
+        # wye         = SP.new_wye()
+        #...................................................................................................
+        source_A    = probe_A
+        source_B    = probe_B
+        pipeline    = []
+        pipeline.push source_A
+        pipeline.push $watch ( d ) -> help 'A', jr d
+        pipeline.push SP.new_wye source_B
+        pipeline.push $watch ( d ) -> urge 'AB', jr d
+        pipeline.push $drain ( Σ ) ->
+          whisper 'AB', jr Σ
+          resolve Σ.join ''
+        SP.pull pipeline...
+        return null
+    #.........................................................................................................
+    done()
+    return null
 
 
 ############################################################################################################
 unless module.parent?
-  test @, 'timeout': 30000
+  # test @, 'timeout': 30000
   # test @[ "leapfrogging compared to wye" ]
-  # test @[ "wye 3" ]
+  # test @[ "wye construction (sync)" ]
+  # test @[ "wye construction (async)" ]
+  test @[ "wye construction (method)" ]
 
 
 
