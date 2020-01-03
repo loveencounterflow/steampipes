@@ -20,6 +20,7 @@ assign                    = Object.assign
 #...........................................................................................................
 { isa
   validate
+  defaults
   type_of }               = require './types'
 
 #-----------------------------------------------------------------------------------------------------------
@@ -45,4 +46,14 @@ assign                    = Object.assign
     return R.duct = null
   R = { [@marks.isa_pusher], send, end, buffer: [], duct: null, has_ended: false, }
   return R
+
+#-----------------------------------------------------------------------------------------------------------
+@new_wye = ( settings, source ) ->
+  switch arity = arguments.length
+    when 1 then [ settings, source, ] = [ null, settings, ]
+    when 2 then null
+    else throw new Error "µ44578 expected 1 or 2 arguments, got #{arity}"
+  settings = { defaults.steampipes_new_wye_settings..., settings..., }
+  validate.steampipes_new_wye_settings settings
+  return { [@marks.isa_wye], settings, source, }
 

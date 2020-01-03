@@ -37,6 +37,7 @@ echo                      = CND.echo.bind CND
   validated:        Symbol 'validated'        # Marks a validated sink
   isa_duct:         Symbol 'isa_duct'         # Marks a duct as such
   isa_pusher:       Symbol 'isa_pusher'       # Marks a push source as such
+  isa_wye:          Symbol 'isa_wye'          # Marks an intermediate source
   send_last:        Symbol 'send_last'        # Marks transforms expecting a certain value before EOS
   async:            Symbol 'async'            # Marks transforms as asynchronous (experimental)
 
@@ -76,6 +77,7 @@ echo                      = CND.echo.bind CND
   R = do =>
     return { type: transform.type,              } if transform[ @marks.isa_duct   ]?
     return { type: 'source', isa_pusher: true,  } if transform[ @marks.isa_pusher ]?
+    return { type: 'wye',                       } if transform[ @marks.isa_wye    ]?
     return { type: 'source',                    } if transform[ Symbol.iterator   ]?
     return @_classify_sink transform              if ( isa.object transform ) and transform.sink?
     switch type = type_of transform
@@ -122,13 +124,16 @@ echo                      = CND.echo.bind CND
       when 'source/sink'      then R.type = 'circuit'
       else throw new Error "µ44521 illegal duct configuration #{rpr key}"
     for idx in [ 1 ... blurbs.length - 1 ] by +1
-      unless ( b = blurbs[ idx ] ).type is 'through'
-        throw new Error "µ44522 illegal duct configuration at transform index #{idx}: #{rpr b}"
+      switch ( b = blurbs[ idx ] ).type
+        when 'through'  then null
+        when 'wye'      then ( R.wye_idxs ?= [] ).push idx
+        else throw new Error "µ44522 illegal duct configuration at transform index #{idx}: #{rpr b}"
   return R
 
 #-----------------------------------------------------------------------------------------------------------
 @_pull = ( transforms... ) ->
   duct                  = @_new_duct transforms
+  debug '^22298^', duct
   { transforms, }       = duct
   original_source       = null
   throw new Error "µ77764 source as last transform not yet supported" if duct.last.type  is 'source'
@@ -211,8 +216,7 @@ echo                      = CND.echo.bind CND
 @pull = ( transforms... ) ->
   duct = @_pull transforms...
   # #.........................................................................................................
-  # ### TAINT `await` makes this an async method; is that a problem? ###
-  # if isa.function           duct.transforms[ 0 ].start  then        duct.transforms[ 0 ].start()
+  if isa.function           duct.transforms[ 0 ].start  then        duct.transforms[ 0 ].start()
   # else if isa.asyncfunction duct.transforms[ 0 ].start  then  await duct.transforms[ 0 ].start()
   #.........................................................................................................
   return duct unless duct.type is 'circuit'

@@ -49,6 +49,18 @@ intertype                 = new Intertype module.exports
     "x.$vnr is an optional nonempty list of positive integers": ( x ) ->
       ( not x.$vnr? ) or @isa.pd_nonempty_list_of_positive_integers x.$vnr
 
+#-----------------------------------------------------------------------------------------------------------
+@declare 'steampipes_new_wye_settings',
+  tests:
+    "x is a object":                          ( x ) -> @isa.object          x
+    "x.mode is a text":                       ( x ) -> @isa.text            x.mode
+    "x.mode is known value":                  ( x ) -> x.mode in [ 'asis', 'interleave', ]
+
+#-----------------------------------------------------------------------------------------------------------
+@defaults =
+  steampipes_new_wye_settings:
+    mode:   'asis'
+
 # #-----------------------------------------------------------------------------------------------------------
 # declare 'pipestreams_is_sink_or_through',
 #   tests:
