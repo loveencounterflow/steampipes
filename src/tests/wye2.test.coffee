@@ -249,62 +249,73 @@ SP                        = require '../..'
   return null
 
 #-----------------------------------------------------------------------------------------------------------
+@[ "wye construction (source, transform, drain ducts)" ] = ( T, done ) ->
+  await T.perform null, null, null, -> return new Promise ( resolve, reject ) ->
+    #.......................................................................................................
+    pipeline    = []
+    pipeline.push 'abc'
+    pipeline.push $watch ( d ) -> help 'A', jr d
+    pipeline.push SP.new_wye 'UVW'
+    pipeline.push $watch ( d ) -> urge 'AB', jr d
+    SP.pull pipeline...
+    resolve null
+  #.........................................................................................................
+  await T.perform null, null, null, -> return new Promise ( resolve, reject ) ->
+    #.......................................................................................................
+    pipeline    = []
+    pipeline.push $watch ( d ) -> help 'A', jr d
+    pipeline.push SP.new_wye 'UVW'
+    pipeline.push $watch ( d ) -> urge 'AB', jr d
+    SP.pull pipeline...
+    resolve null
+  #.........................................................................................................
+  await T.perform null, null, null, -> return new Promise ( resolve, reject ) ->
+    #.......................................................................................................
+    pipeline    = []
+    pipeline.push $watch ( d ) -> help 'A', jr d
+    pipeline.push SP.new_wye 'UVW'
+    pipeline.push $watch ( d ) -> urge 'AB', jr d
+    pipeline.push $drain ->
+    SP.pull pipeline...
+    resolve null
+  #.........................................................................................................
+  done()
+  return null
+
+#-----------------------------------------------------------------------------------------------------------
 @[ "wye construction (method)" ] = ( T, done ) ->
+  probes_and_matchers = [
+    [["abc","UVWXYZ"],"abcUVWXYZ",null]
+    ]
+  for [ [ probe_A, probe_B, ], matcher, error, ] in probes_and_matchers
+    await T.perform [ probe_A, probe_B, ], matcher, error, -> return new Promise ( resolve, reject ) ->
+      # wye         = SP.new_wye()
+      #.....................................................................................................
+      source_A    = probe_A
+      source_B    = probe_B
+      pipeline    = []
+      pipeline.push source_A
+      pipeline.push $watch ( d ) -> help 'A', jr d
+      pipeline.push SP.new_wye source_B
+      pipeline.push $watch ( d ) -> urge 'AB', jr d
+      pipeline.push $drain ( Σ ) ->
+        whisper 'AB', jr Σ
+        resolve Σ.join ''
+      SP.pull pipeline...
+      return null
   #.........................................................................................................
-  provide_new_wye = ->
-    last            = Symbol 'last'
-    @marks          = { isa_wye: Symbol 'isa_wye', } ### TAINT overwrites original attribute ###
-    _original_pull  = @pull
-
-    #-----------------------------------------------------------------------------------------------------------
-    @new_wye = ( settings, source ) ->
-      switch arity = arguments.length
-        when 1 then [ settings, source, ] = [ null, settings, ]
-        when 2 then null
-        else throw new Error "µ44578 expected 1 or 2 arguments, got #{arity}"
-      settings = { defaults.steampipes_new_wye_settings..., settings..., }
-      validate.steampipes_new_wye_settings settings
-      return { [@marks.isa_wye], settings, source, }
-
-    #-----------------------------------------------------------------------------------------------------------
-    @pull = ( transforms... ) ->
-      R = _original_pull.call @, transforms...
-      debug '^33342^', R
-      return R
-  provide_new_wye.apply SP
-  #.........................................................................................................
-  do =>
-    probes_and_matchers = [
-      [["abc","UVWXYZ"],"abcUVWXYZ",null]
-      ]
-    for [ [ probe_A, probe_B, ], matcher, error, ] in probes_and_matchers
-      await T.perform [ probe_A, probe_B, ], matcher, error, -> return new Promise ( resolve, reject ) ->
-        # wye         = SP.new_wye()
-        #...................................................................................................
-        source_A    = probe_A
-        source_B    = probe_B
-        pipeline    = []
-        pipeline.push source_A
-        pipeline.push $watch ( d ) -> help 'A', jr d
-        pipeline.push SP.new_wye source_B
-        pipeline.push $watch ( d ) -> urge 'AB', jr d
-        pipeline.push $drain ( Σ ) ->
-          whisper 'AB', jr Σ
-          resolve Σ.join ''
-        SP.pull pipeline...
-        return null
-    #.........................................................................................................
-    done()
-    return null
+  done()
+  return null
 
 
 ############################################################################################################
 unless module.parent?
-  # test @, 'timeout': 30000
+  test @, 'timeout': 30000
   # test @[ "leapfrogging compared to wye" ]
   # test @[ "wye construction (sync)" ]
   # test @[ "wye construction (async)" ]
-  test @[ "wye construction (method)" ]
+  # test @[ "wye construction (method)" ]
+  # test @[ "wye construction (source, transform, drain ducts)" ]
 
 
 

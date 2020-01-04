@@ -47,7 +47,8 @@ echo                      = CND.echo.bind CND
 #-----------------------------------------------------------------------------------------------------------
 @remit  = @$ = ( modifications..., transform ) ->
   validate.function transform
-  throw new Error "µ20123 transform arity #{arity} not implemented" unless ( arity = transform.length ) is 2
+  unless ( arity = transform.length ) is 2
+    throw new Error "^steampipes/pullremit@7000^ transform arity #{arity} not implemented"
   unless ( sink = transform.sink )?
     transform.sink = sink = []
   transform.send = sink.push.bind sink
@@ -57,8 +58,10 @@ echo                      = CND.echo.bind CND
 #-----------------------------------------------------------------------------------------------------------
 @$async = ( transform ) ->
   ### TAINT incomplete implementation: surround, leapfrog arguments missing ###
-  throw new Error "µ77644 modifications not yet implemented" unless arguments.length is 1
-  throw new Error "µ77644 transform arity #{arity} not implemented" unless ( arity = transform.length ) is 3
+  unless arguments.length is 1
+    throw new Error "^steampipes/pullremit@7001^ modifications not yet implemented"
+  unless ( arity = transform.length ) is 3
+    throw new Error "^steampipes/pullremit@7002^ transform arity #{arity} not implemented"
   resolve = null
   R       = ( d, send ) => return new Promise ( r_ ) => resolve = r_; await transform d, send, done
   R.sink  = sink = []
@@ -83,7 +86,7 @@ echo                      = CND.echo.bind CND
     switch type = type_of transform
       when 'function'           then return { type: 'through', }
       when 'generatorfunction'  then return { type: 'source', must_call: true, }
-    throw new Error "µ44521 expected an iterable, a function, a generator function or a sink, got a #{type}"
+    throw new Error "^steampipes/pullremit@7003^ expected an iterable, a function, a generator function or a sink, got a #{type}"
   R.mode = if transform[ @marks.async ]? then 'async' else 'sync'
   return R
 
@@ -122,22 +125,22 @@ echo                      = CND.echo.bind CND
       when 'through/sink'     then R.type = 'sink'
       when 'through/through'  then R.type = 'through'
       when 'source/sink'      then R.type = 'circuit'
-      else throw new Error "µ44521 illegal duct configuration #{rpr key}"
+      else throw new Error "^steampipes/pullremit@7004^ illegal duct configuration #{rpr key}"
     for idx in [ 1 ... blurbs.length - 1 ] by +1
       switch ( b = blurbs[ idx ] ).type
-        when 'through'  then null
-        when 'wye'      then ( R.wye_idxs ?= [] ).push idx
-        else throw new Error "µ44522 illegal duct configuration at transform index #{idx}: #{rpr b}"
+        when 'through', 'wye' then null
+        else throw new Error "^steampipes/pullremit@7005^ illegal duct configuration at transform index #{idx}: #{rpr b}"
   return R
 
 #-----------------------------------------------------------------------------------------------------------
 @_pull = ( transforms... ) ->
   duct                  = @_new_duct transforms
-  debug '^22298^', duct
   { transforms, }       = duct
   original_source       = null
-  throw new Error "µ77764 source as last transform not yet supported" if duct.last.type  is 'source'
-  throw new Error "µ77765 sink as first transform not yet supported"  if duct.first.type is 'sink'
+  if duct.last.type  is 'source'
+    throw new Error "^steampipes/pullremit@7006^ source as last transform not yet supported"
+  if duct.first.type is 'sink'
+    throw new Error "^steampipes/pullremit@7007^ sink as first transform not yet supported"
   #.........................................................................................................
   if duct.first.type is 'source'
     transforms[ 0 ] = transforms[ 0 ]() if duct.first.must_call
@@ -213,9 +216,63 @@ echo                      = CND.echo.bind CND
   return duct
 
 #-----------------------------------------------------------------------------------------------------------
+@_integrate_wye = ( transforms, wye_idx ) ->
+  last        = Symbol 'last'
+  #.........................................................................................................
+  source_A    = probe_A
+  A_has_ended = false
+  B_has_ended = false
+  pipeline_A  = []
+  pipeline_A.push source_A
+  pipeline_A.push $watch ( d ) -> help 'A', jr d
+  pipeline_A.push $ { last, }, ( d, send ) ->
+    if d is last
+      A_has_ended = true
+      return end_source_C()
+    source_C.send d
+  pipeline_A.push $drain -> whisper 'A'
+  #.........................................................................................................
+  source_B    = probe_B
+  pipeline_B  = []
+  pipeline_B.push source_B
+  pipeline_B.push $watch ( d ) -> urge 'B', jr d
+  pipeline_B.push $ { last, }, ( d, send ) ->
+    if d is last
+      B_has_ended = true
+      return end_source_C()
+    source_C.send d
+  pipeline_B.push $drain -> whisper 'B'
+  #.........................................................................................................
+  source_C    = SP.new_push_source()
+  pipeline_C  = []
+  pipeline_C.push source_C
+  pipeline_C.push $watch ( d ) -> info 'C', jr d
+  pipeline_C.push $drain ( Σ ) ->
+    whisper 'C', jr Σ
+    resolve Σ.join ''
+  #.........................................................................................................
+  end_source_C = ->
+    return unless ( A_has_ended and B_has_ended )
+    source_C.end()
+  #.........................................................................................................
+  # pipeline_A.push wye
+  duct_C  = SP.pull pipeline_C...
+  duct_A  = SP.pull pipeline_A...
+  duct_B  = SP.pull pipeline_B...
+
+#-----------------------------------------------------------------------------------------------------------
+@_integrate_wyes = ( transforms... ) ->
+  debug '^776665^', transforms
+  # for transform, wye_idx in transforms
+  #   if transform[ @marks.isa_wye ]
+  #     return @_integrate_wye transforms, wye_idx
+  return null
+
+#-----------------------------------------------------------------------------------------------------------
 @pull = ( transforms... ) ->
+  return duct if ( duct = @_integrate_wyes transforms... )?
   duct = @_pull transforms...
-  # #.........................................................................................................
+  #.........................................................................................................
   if isa.function           duct.transforms[ 0 ].start  then        duct.transforms[ 0 ].start()
   # else if isa.asyncfunction duct.transforms[ 0 ].start  then  await duct.transforms[ 0 ].start()
   #.........................................................................................................
