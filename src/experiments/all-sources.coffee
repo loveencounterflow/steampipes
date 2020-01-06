@@ -181,7 +181,7 @@ lpad                      = ( x, P... ) -> x.padStart P...
 
 #-----------------------------------------------------------------------------------------------------------
 @[ "tabulate distinctive features" ] = ( T, done ) ->
-  do =>
+  await do =>
     probes_and_matchers = [
       @_get_standard_iterables()...
       @_get_custom_iterable_2()
@@ -223,10 +223,9 @@ lpad                      = ( x, P... ) -> x.padStart P...
       # else if async_iterator_type is 'asyncgeneratorfunction'
       #   debug async_iterator.apply probe
       #.....................................................................................................
-      debug mode
       switch mode
         when 'sync'   then  result = ( d for        d from       iterator.apply probe )
-        when 'async'  then  result = null # ( d for await  d from async_iterator.apply probe )
+        when 'async'  then  result = ( d for await  d from async_iterator.apply probe )
       #.....................................................................................................
       name_txt                  = CND.blue  rpad  name,                   30
       probe_type_txt            = CND.gold  rpad  probe_type,             23
