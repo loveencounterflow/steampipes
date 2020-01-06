@@ -35,6 +35,7 @@ SP                        = require '../..'
 #...........................................................................................................
 rpad                      = ( x, P... ) -> x.padEnd   P...
 lpad                      = ( x, P... ) -> x.padStart P...
+sleep                     = ( dts ) -> new Promise ( done ) => setTimeout done, dts * 1000
 
 
 
@@ -61,8 +62,8 @@ lpad                      = ( x, P... ) -> x.padStart P...
   return [
     [ 'text',       "𫠠𫠡𫠢",["𫠠","𫠡","𫠢",],null]
     [ 'list',       ["𫠠","𫠡","𫠢",],["𫠠","𫠡","𫠢",],null]
-    [ 'set',        ( new Set "abcde𫠠𫠡𫠢𫠣" ),["a","b","c","d","e","𫠠","𫠡","𫠢","𫠣"],null]
-    [ 'map',        ( new Map [[ "abcde", "𫠠𫠡𫠢𫠣" ]] ),[["abcde","𫠠𫠡𫠢𫠣"]],null]
+    [ 'set',        ( new Set "𫠠𫠡𫠢" ),["𫠠","𫠡","𫠢",],null]
+    [ 'map',        ( new Map [[ "𫠠", "𫠡𫠢" ]] ),[[ "𫠠", "𫠡𫠢" ]],null]
     [ 'generator',  ( -> yield '𫠠'; yield '𫠡'; yield '𫠢')(), ["𫠠","𫠡","𫠢",],null]
     ]
 
@@ -299,7 +300,7 @@ lpad                      = ( x, P... ) -> x.padStart P...
 
 ############################################################################################################
 unless module.parent?
-  test @
+  test @, { timeout: 5000, }
   # test @[ "tabulate distinctive features" ].bind @
   # test @[ "wye construction (async)" ]
   # test @[ "wye construction (method)" ]
