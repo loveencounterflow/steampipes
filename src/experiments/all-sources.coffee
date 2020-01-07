@@ -80,8 +80,12 @@ sleep                     = ( dts ) -> new Promise ( done ) => setTimeout done, 
   return [ 'asyncgeneratorfunction', ( -> await 42; yield '𫠠'; yield '𫠡'; yield '𫠢' ), ["𫠠","𫠡","𫠢",],null]
 
 #-----------------------------------------------------------------------------------------------------------
-@_get_function      = -> [ 'function',      ( ->           ["𫠠","𫠡","𫠢",] ), ["𫠠","𫠡","𫠢",]. null, ]
-@_get_asyncfunction = -> [ 'asyncfunction', ( -> await 42; ["𫠠","𫠡","𫠢",] ), ["𫠠","𫠡","𫠢",]. null, ]
+@_get_function_1      = -> [ 'function_1',      ( ->           ["𫠠","𫠡","𫠢",] ),                                   ["𫠠","𫠡","𫠢",], null, ]
+@_get_asyncfunction_1 = -> [ 'asyncfunction_1', ( -> await 42; ["𫠠","𫠡","𫠢",] ),                                   ["𫠠","𫠡","𫠢",], null, ]
+@_get_function_2      = -> [ 'function_2',      ( ->           ( ->           yield '𫠠'; yield '𫠡'; yield '𫠢' ) ), ["𫠠","𫠡","𫠢",], null, ]
+@_get_asyncfunction_2 = -> [ 'asyncfunction_2', ( -> await 42; ( ->           yield '𫠠'; yield '𫠡'; yield '𫠢' ) ), ["𫠠","𫠡","𫠢",], null, ]
+@_get_function_3      = -> [ 'function_3',      ( ->           ( -> await 42; yield '𫠠'; yield '𫠡'; yield '𫠢' ) ), ["𫠠","𫠡","𫠢",], null, ]
+@_get_asyncfunction_3 = -> [ 'asyncfunction_3', ( -> await 42; ( -> await 42; yield '𫠠'; yield '𫠡'; yield '𫠢' ) ), ["𫠠","𫠡","𫠢",], null, ]
 
 #-----------------------------------------------------------------------------------------------------------
 @_get_all_probes_and_matchers = ->
