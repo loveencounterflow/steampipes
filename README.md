@@ -69,8 +69,8 @@ is valid.
 
 In addition, synchronous and asynchronous functions that, when called without arguments, return a value for
 which one of the iteration modes (sync or async) works correctly are allowed. Such a function will be called
-as late as possible, that is, not necessarily at pipline definition time, but only when a pipeline with a
-source and a drain has been constructed and is started with `pull()`.
+as late as possible, that is, not at pipline definition time, but only when a pipeline with a source and a
+drain has been constructed and is started with `pull()`.
 
 
 ### Transforms
