@@ -9,6 +9,7 @@
 
 - [Motivation](#motivation)
 - [How to Construct Sources, Transforms, and Sinks](#how-to-construct-sources-transforms-and-sinks)
+  - [Sources](#sources)
   - [Transforms](#transforms)
   - [Sinks](#sinks)
 - [Asynchronous Sources and Transforms](#asynchronous-sources-and-transforms)
@@ -41,6 +42,36 @@ switched to [pull-streams](https://pull-stream.github.io).
 
 
 ## How to Construct Sources, Transforms, and Sinks
+
+### Sources
+
+Valid SteamPipes sources include all JS values for which either
+
+```
+CS                            │ JS
+──────────────────────────────┼─────────────────────────────────────
+for d from source             │ for ( d of source ) {
+  ...                         │   ... }
+──────────────────────────────┴─────────────────────────────────────
+```
+
+or
+
+```
+CS                            │ JS
+──────────────────────────────┼─────────────────────────────────────
+for await d from source       │ for await ( d of source ) {
+  ...                         │   ... }
+──────────────────────────────┴─────────────────────────────────────
+```
+
+is valid.
+
+In addition, synchronous and asynchronous functions that, when called without arguments, return a value for
+which one of the iteration modes (sync or async) works correctly are allowed. Such a function will be called
+as late as possible, that is, not necessarily at pipline definition time, but only when a pipeline with a
+source and a drain has been constructed and is started with `pull()`.
+
 
 ### Transforms
 
