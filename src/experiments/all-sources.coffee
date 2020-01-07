@@ -96,8 +96,12 @@ sleep                     = ( dts ) -> new Promise ( done ) => setTimeout done, 
     @_get_asyncgenerator()
     @_get_asyncgeneratorfunction()
     @_get_custom_iterable_1()
-    @_get_function()
-    @_get_asyncfunction()
+    @_get_function_1()
+    @_get_asyncfunction_1()
+    @_get_function_2()
+    @_get_asyncfunction_2()
+    @_get_function_3()
+    @_get_asyncfunction_3()
     ]
 
 #===========================================================================================================
@@ -170,22 +174,46 @@ sleep                     = ( dts ) -> new Promise ( done ) => setTimeout done, 
   #.........................................................................................................
   for [ name, source, matcher, error, ] in probes_and_matchers
     check_count++
-    source    = source() if ( type_of source ) in [ 'generatorfunction', 'asyncgeneratorfunction', ]
-    type      = type_of source
+    types     = []
+    mode      = 'sync'
+    types.push type_of source
+    #.......................................................................................................
+    if ( type = type_of source ) is 'function'
+      source = source()
+      types.push type_of source
+    #.......................................................................................................
+    else if type is 'asyncfunction'
+      mode    = 'async'
+      source  = await source()
+      types.push type_of source
+    #.......................................................................................................
+    if ( type_of source ) in [ 'generatorfunction', 'asyncgeneratorfunction', ]
+      source = source()
+      types.push type_of source
+    #.......................................................................................................
     error     = null
+    type      = type_of source
     name_txt  = CND.blue rpad name, 30
-    debug '^233^', type
+    types_txt = CND.grey rpad ( types.join ' -> ' ), 60
+    ### NOTE mode is 'async' if procuring generator or iteration is async ###
+    mode      = 'async' if type is 'asyncgenerator'
+    mode_txt  = if mode is 'sync' then ( CND.green 'sync ' ) else ( CND.red 'async' )
     try
-      if type is 'asyncgenerator'
-        info name_txt, ( CND.green 'sync ' ), ( CND.grey type ), ( CND.blue result = ( d for await d from source ) )
-      else
-        info name_txt, ( CND.red   'async' ), ( CND.grey type ), ( CND.blue result = ( d for       d from source ) )
+      if type is 'asyncgenerator' then  result = ( d for await d from source )
+      else                              result = ( d for       d from source )
     catch error
       warn name_txt, ( CND.grey type ), ( CND.red error.message )
+    result_txt  = jr result
     unless error?
-      hit_count++ if CND.equals result, matcher
+      if CND.equals result, matcher
+        hit_count++
+        result_txt = CND.green result_txt
+      else
+        result_txt = CND.red   result_txt, '≠', ( jr matcher )
+      info name_txt, mode_txt, types_txt, result_txt
   #.........................................................................................................
   urge "#{hit_count} / #{check_count}"
+  T.eq hit_count, check_count
   #.........................................................................................................
   done()
 
