@@ -54,7 +54,7 @@ sleep                     = ( dts ) -> new Promise ( done ) => setTimeout done, 
 #-----------------------------------------------------------------------------------------------------------
 @_get_custom_iterable_2 = ->
   myIterable_2 =
-    [Symbol.iterator]: -> ["𫠠","𫠡","𫠢",]
+    [Symbol.iterator]: -> yield from ["𫠠","𫠡","𫠢",]
   return [ 'object_with_list_as_iterator', myIterable_2, ["𫠠","𫠡","𫠢",], null, ]
 
 #-----------------------------------------------------------------------------------------------------------
@@ -78,6 +78,23 @@ sleep                     = ( dts ) -> new Promise ( done ) => setTimeout done, 
 #-----------------------------------------------------------------------------------------------------------
 @_get_asyncgeneratorfunction = ->
   return [ 'asyncgeneratorfunction', ( -> await 42; yield '𫠠'; yield '𫠡'; yield '𫠢' ), ["𫠠","𫠡","𫠢",],null]
+
+#-----------------------------------------------------------------------------------------------------------
+@_get_function      = -> [ 'function',      ( ->           ["𫠠","𫠡","𫠢",] ), ["𫠠","𫠡","𫠢",]. null, ]
+@_get_asyncfunction = -> [ 'asyncfunction', ( -> await 42; ["𫠠","𫠡","𫠢",] ), ["𫠠","𫠡","𫠢",]. null, ]
+
+#-----------------------------------------------------------------------------------------------------------
+@_get_all_probes_and_matchers = ->
+  return [
+    @_get_standard_iterables()...
+    @_get_custom_iterable_2()
+    @_get_generatorfunction()
+    @_get_asyncgenerator()
+    @_get_asyncgeneratorfunction()
+    @_get_custom_iterable_1()
+    @_get_function()
+    @_get_asyncfunction()
+    ]
 
 #===========================================================================================================
 #
@@ -183,15 +200,10 @@ sleep                     = ( dts ) -> new Promise ( done ) => setTimeout done, 
 #-----------------------------------------------------------------------------------------------------------
 @[ "tabulate distinctive features" ] = ( T, done ) ->
   await do =>
-    probes_and_matchers = [
-      @_get_standard_iterables()...
-      @_get_custom_iterable_2()
-      @_get_generatorfunction()
-      @_get_asyncgenerator()
-      @_get_asyncgeneratorfunction()
-      @_get_custom_iterable_1()
-      ]
+    probes_and_matchers = @_get_all_probes_and_matchers()
     for [ name, probe, ] in probes_and_matchers
+      #.....................................................................................................
+      ### STEP 1 ###
       mode                  = 'sync'
       probe_type            = type_of probe
       #.....................................................................................................
@@ -199,6 +211,7 @@ sleep                     = ( dts ) -> new Promise ( done ) => setTimeout done, 
         probe                 = probe()
         probe_type            = type_of probe
       #.....................................................................................................
+      ### STEP 2 ###
       iterator              = probe[ Symbol.iterator ]
       iterator_type         = type_of iterator
       iterator_return_type  = './.'
@@ -207,6 +220,7 @@ sleep                     = ( dts ) -> new Promise ( done ) => setTimeout done, 
         ### TAINT should not call iterator before ready; here done for illustration ###
         iterator_return_type = type_of iterator.apply probe
       #.....................................................................................................
+      ### STEP 3 ###
       async_iterator        = undefined
       async_iterator_type   = 'undefined'
       unless iterator?
@@ -216,14 +230,8 @@ sleep                     = ( dts ) -> new Promise ( done ) => setTimeout done, 
       #.....................................................................................................
       iterator_type             = './.' if iterator_type is 'undefined'
       async_iterator_type       = './.' if async_iterator_type is 'undefined'
-      # #.....................................................................................................
-      # generator                 = null
-      # if iterator_type is 'generatorfunction'
-      #   debug iterator.apply probe
-      # #.....................................................................................................
-      # else if async_iterator_type is 'asyncgeneratorfunction'
-      #   debug async_iterator.apply probe
       #.....................................................................................................
+      ### STEP 4 ###
       switch mode
         when 'sync'   then  result = ( d for        d from       iterator.apply probe )
         when 'async'  then  result = ( d for await  d from async_iterator.apply probe )
@@ -250,57 +258,84 @@ sleep                     = ( dts ) -> new Promise ( done ) => setTimeout done, 
   done()
 
 #-----------------------------------------------------------------------------------------------------------
-@[ "_get iterator from source" ] = ( T, done ) ->
-  SP._iterator_from_source = ( source ) ->
-    mode          = 'sync'
-    iterator      = source[ Symbol.iterator ]
-    iterator_type = type_of iterator
-    if type in [ 'generatorfunction', 'asyncgeneratorfunction', ]
-      source        = source()
-      iterator      = source[ Symbol.iterator ]
-      iterator_type = type_of iterator
-      mode          = 'async' if type is 'asyncgeneratorfunction'
-    if iterator_type is 'function'
-      iterator = iterator()
-      return { mode, iterator, }
-    iterator      = source[ Symbol.asyncIterator ]
-    iterator_type = type_of iterator
-
-    # if
-    #   when 'undefined'
-    #     debug '^323336^>>>>>>>>>>>>>>>>', source
-
-    #   else
-    #     throw new Error "^steampipes/_iterator_from_source@33398^ unknown type #{rpr type} for source[ Symbol.iterator ]"
-    type = type_of source
-    throw new Error "^steampipes/_iterator_from_source@33399^ unable to produce iterator for source type #{rpr type}"
-  do =>
-    probes_and_matchers = [
-      @_get_standard_iterables()...
-      @_get_custom_iterable_2()
-      @_get_custom_iterable_1()
-      @_get_generatorfunction()
-      @_get_asyncgeneratorfunction()
-      ]
+@[ "normalize_source" ] = ( T, done ) ->
+  SP._normalize_source = ( probe ) ->
+    #.......................................................................................................
+    ### STEP 1 ###
+    mode                  = 'sync'
+    original_probe_type   = type_of probe
+    #.......................................................................................................
+    if ( probe_type = type_of probe ) in [ 'generatorfunction', 'asyncgeneratorfunction', ]
+      probe                 = probe()
+      probe_type            = type_of probe
+    #.......................................................................................................
+    ### STEP 2 ###
+    iterator = probe[ Symbol.iterator ]
+    #.......................................................................................................
+    unless iterator? # ( iterator_type = type_of iterator ) is 'function'
+      #.....................................................................................................
+      ### STEP 3 ###
+      mode            = 'async'
+      async_iterator  = probe[ Symbol.asyncIterator ]
+      debug '^33321^', ( type_of async_iterator )
+      debug '^33321^', probe
+    #.......................................................................................................
+    unless ( mode is 'sync' and iterator? ) or ( mode is 'async' and async_iterator? )
+      throw new Error "^steampipes/_normalize_source@33371^ unable to produce iterator for source type #{rpr original_probe_type}"
+    # debug '^3332^', mode, iterator
+    #.......................................................................................................
+    ### STEP 4 ###
+    if mode is 'sync' then  iterate = ->       iterator.apply probe
+    else                    iterate = -> async_iterator.apply probe
+    #.......................................................................................................
+    return { mode, iterate, }
+  await do =>
+    probes_and_matchers = @_get_all_probes_and_matchers()
     for [ name, probe, matcher, error, ] in probes_and_matchers
+      matcher = [] # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
       await T.perform probe, matcher, error, -> return new Promise ( resolve, reject ) ->
         result = []
-        debug probe
-        { mode, iterator, } = SP._iterator_from_source probe
+        whisper '-------------------'
+        info name
+        { mode, iterate, } = SP._normalize_source probe
         switch mode
-          when 'sync'
-            for d from iterator
-              result.push d
-          when 'async'
-            throw new Error "µ498282 async mode not implemented"
-          else
-            throw new Error "µ498283 unknown iterator mode #{rpr mode}"
+          when 'sync'   then result.push d for        d from iterate()
+          when 'async'  then result.push d for await  d from iterate()
+          else throw new Error "µ498283 unknown iterator mode #{rpr mode}"
         resolve result
     done()
 
+#-----------------------------------------------------------------------------------------------------------
+@[ "iterate" ] = ( T, done ) ->
+  probes_and_matchers = @_get_all_probes_and_matchers()
+  check_count         = 0
+  hit_count           = 0
+  #.........................................................................................................
+  for [ name, source, matcher, error, ] in probes_and_matchers
+    check_count++
+    source    = source() if ( type_of source ) in [ 'generatorfunction', 'asyncgeneratorfunction', ]
+    type      = type_of source
+    error     = null
+    name_txt  = CND.blue rpad name, 30
+    debug '^233^', type
+    try
+      if type is 'asyncgenerator'
+        info name_txt, ( CND.green 'sync ' ), ( CND.grey type ), ( CND.blue result = ( d for await d from source ) )
+      else
+        info name_txt, ( CND.red   'async' ), ( CND.grey type ), ( CND.blue result = ( d for       d from source ) )
+    catch error
+      warn name_txt, ( CND.grey type ), ( CND.red error.message )
+    unless error?
+      hit_count++ if CND.equals result, matcher
+  #.........................................................................................................
+  urge "#{hit_count} / #{check_count}"
+  #.........................................................................................................
+  done()
+
 ############################################################################################################
-unless module.parent?
-  test @, { timeout: 5000, }
+if module is require.main then do =>
+  # test @, { timeout: 5000, }
+  test @[ "iterate" ].bind @
   # test @[ "tabulate distinctive features" ].bind @
   # test @[ "wye construction (async)" ]
   # test @[ "wye construction (method)" ]
