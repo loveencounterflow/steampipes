@@ -275,6 +275,22 @@ catch error
   transform does return (stop running), so that might be a way)
  * [ ] explain why using only `yield` instead of `send()` is not a good idea
 
+### Future: JS Pipeline Operator
+
+see [Breaking Chains with Pipelines in Modern
+JavaScript](https://www.wix.engineering/post/breaking-chains-with-pipelines-in-modern-javascript)
+
+```js
+const result3 = numbers
+  |> filter(#, v => v % 2 === 0)
+  |> map(#, v => v + 1)
+  |> slice(#, 0, 3)
+  |> Array.from;
+```
+
+* Lazy evaluation, no backpressure (?), built into the language.
+* Already usable with Babel.
+* Article discusses a number of alternatives with merits and demerits, must read.
 
 
 ### To Do: Railway-Oriented Programming
