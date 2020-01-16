@@ -1,9 +1,19 @@
 
 
+###
+
+also see [Breaking Chains with Pipelines in Modern
+JavaScript](https://www.wix.engineering/post/breaking-chains-with-pipelines-in-modern-javascript)
+
+###
+
+
+'use strict'
+
 ############################################################################################################
 CND                       = require 'cnd'
 rpr                       = CND.rpr
-badge                     = 'STEAMPIPES/TESTS/WYE2'
+badge                     = 'STEAMPIPES/FRAMEWORKLESS-PIPELINES'
 log                       = CND.get_logger 'plain',     badge
 info                      = CND.get_logger 'info',      badge
 whisper                   = CND.get_logger 'whisper',   badge
@@ -20,11 +30,11 @@ OS                        = require 'os'
 test                      = require 'guy-test'
 #...........................................................................................................
 SP                        = require '../..'
-# { $
-#   $async
-#   $drain
-#   $watch
-#   $show  }                = SP.export()
+{ $
+  $async
+  $drain
+  $watch
+  $show  }                = SP.export()
 { d }                     = CND
 #...........................................................................................................
 { isa
