@@ -36,7 +36,6 @@ DATOM                     = require 'datom'
 sleep                     = ( dts ) -> new Promise ( done ) => setTimeout done, dts * 1000
 { jr }                    = CND
 #...........................................................................................................
-require 'cnd/lib/exception-handler'
 
 provide_fifo = ->
 
