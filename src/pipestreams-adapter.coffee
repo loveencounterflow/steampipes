@@ -17,11 +17,11 @@ help                      = CND.get_logger 'help',      badge
 urge                      = CND.get_logger 'urge',      badge
 echo                      = CND.echo.bind CND
 #...........................................................................................................
-PD                        = require 'pipedreams'
 
 
 #-----------------------------------------------------------------------------------------------------------
 @adapt_ps_transform = ( ps_transform ) ->
+  PD        = require 'pipedreams'
   ps_source = PD.new_push_source()
   send      = null
   pipeline  = []
