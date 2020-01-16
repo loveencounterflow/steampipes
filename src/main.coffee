@@ -39,6 +39,7 @@ class Steampipes extends Multimix
   #---------------------------------------------------------------------------------------------------------
   constructor: ( @settings = null ) ->
     super()
+    @HTML = require './_html-parser'
     # @specs    = {}
     # @isa      = Multimix.get_keymethod_proxy @, isa
     # # @validate = Multimix.get_keymethod_proxy @, validate

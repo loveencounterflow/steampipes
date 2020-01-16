@@ -21,13 +21,12 @@ types                     = require './types'
   cast
   last_of
   type_of }               = types
-# SP                        = require './main'
-# debug SP
+# SP                        = require '..'
 # { $
 #   $async
+#   $drain
 #   $watch
-#   $show
-#   $drain }                = SP.export()
+#   $show  }                = SP.export()
 #...........................................................................................................
 DATOM                     = new ( require 'datom' ).Datom { dirty: false, }
 { new_datom
@@ -35,39 +34,16 @@ DATOM                     = new ( require 'datom' ).Datom { dirty: false, }
   # lets
   select }                = DATOM.export()
 #...........................................................................................................
+Multimix                  = require 'multimix'
 HtmlParser                = require 'atlas-html-stream'
-
-
-### NOTE
-
-below are first steps to build an MKTS-compatible HTML parser from scratch; this will probably not be
-continued because [`atlas-html-stream`](https://github.com/atlassubbed/atlas-html-stream) looks like a good
-solution (except we still have too look for opening tags since some MKTS tags can use their own content
-parsers).
+L                         = @
 
 #-----------------------------------------------------------------------------------------------------------
-attributes_pattern        = /\b([a-z][a-z0-9\-]*)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'|(\S+)))?/ig;
+@new_onepiece_parser  = -> @_new_parse_method false
+@new_piecemeal_parser = -> @_new_parse_method true
 
 #-----------------------------------------------------------------------------------------------------------
-@parse_attributes = ( attributes ) ->
-  # thx to https://github.com/taoqf/node-html-parser/blob/master/src/index.ts#L497
-  R = {}
-  return R if ( attributes.length is 0 )
-  # attributes_pattern.
-  debug attributes_pattern.lastIndex
-  while ( match = attributes_pattern.exec attributes )?
-    debug attributes_pattern.lastIndex
-    R[ match[ 1 ] ] = match[ 2 ] ? match[ 3 ] ? match[ 4 ] ? true
-  return R
-
-#-----------------------------------------------------------------------------------------------------------
-@parse_tag = ( tag ) ->
-
-###
-
-
-#-----------------------------------------------------------------------------------------------------------
-@new_parse_method = ->
+@_new_parse_method = ( piecemeal ) ->
   R       = null
   parser  = new HtmlParser { preserveWS: true, }
   #.........................................................................................................
@@ -83,11 +59,34 @@ attributes_pattern        = /\b([a-z][a-z0-9\-]*)(?:\s*=\s*(?:"([^"]*)"|'([^']*)
   parser.on 'error', ( error ) -> throw error
   # parser.on 'end', -> R.push new_datom '^stop'
   #.........................................................................................................
-  return ( html ) =>
+  R = ( html ) =>
     R = []
     parser.write html
-    parser.reset()
+    unless piecemeal
+      parser.flushText()
+      parser.reset()
     return R
+  #.........................................................................................................
+  R.flush = -> parser.flushText()
+  R.reset = -> parser.reset()
+  return R
+
+#-----------------------------------------------------------------------------------------------------------
+class Htmlparser extends Multimix
+  # @extend   object_with_class_properties
+  @include L
+
+  #---------------------------------------------------------------------------------------------------------
+  constructor: ( @settings = null ) ->
+    super()
+    # @specs    = {}
+    # @isa      = Multimix.get_keymethod_proxy @, isa
+    # # @validate = Multimix.get_keymethod_proxy @, validate
+    # declarations.declare_types.apply @
+
+############################################################################################################
+module.exports  = new Htmlparser()
+
 
 
 
