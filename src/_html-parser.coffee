@@ -30,13 +30,37 @@ types                     = require './types'
 #...........................................................................................................
 DATOM                     = new ( require 'datom' ).Datom { dirty: false, }
 { new_datom
-  wrap_datom
-  # lets
   select }                = DATOM.export()
 #...........................................................................................................
 Multimix                  = require 'multimix'
 HtmlParser                = require 'atlas-html-stream'
 L                         = @
+
+#-----------------------------------------------------------------------------------------------------------
+@html5_block_level_tagnames = new Set """address article aside blockquote dd details dialog div dl dt
+fieldset figcaption figure footer form h1 h2 h3 h4 h5 h6 header hgroup hr li main nav ol p pre section table
+td th ul""".split /\s+/
+
+#-----------------------------------------------------------------------------------------------------------
+@_new_datom = ( name, data, text ) ->
+  return new_datom '^text', { text, } if text?
+  #.........................................................................................................
+  is_block = @html5_block_level_tagnames.has name
+  unless data?
+    return new_datom '>' + name unless is_block
+    return new_datom '>' + name, { is_block, }
+  #.........................................................................................................
+  has_keys = false
+  for key, value of data
+    has_keys    = true
+    data[ key ] = true if value is ''
+  #.........................................................................................................
+  unless has_keys
+    return new_datom '<' + name unless is_block
+    return new_datom '<' + name, { is_block, }
+  #.........................................................................................................
+  return new_datom '<' + name, { data, } unless is_block
+  return new_datom '<' + name, { data, is_block, }
 
 #-----------------------------------------------------------------------------------------------------------
 @new_onepiece_parser  = -> @_new_parse_method false
@@ -47,15 +71,7 @@ L                         = @
   R       = null
   parser  = new HtmlParser { preserveWS: true, }
   #.........................................................................................................
-  parser.on 'data', ( { name, data, text, } ) =>
-    return R.push new_datom '^text', { text, } if text?
-    return R.push new_datom '>' + name unless data?
-    has_keys = false
-    for key, value of data
-      has_keys    = true
-      data[ key ] = true if value is ''
-    return R.push new_datom '<' + name unless has_keys
-    return R.push new_datom '<' + name, { data, }
+  parser.on 'data', ( { name, data, text, } ) => R.push @_new_datom name, data, text
   parser.on 'error', ( error ) -> throw error
   # parser.on 'end', -> R.push new_datom '^stop'
   #.........................................................................................................
