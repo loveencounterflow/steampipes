@@ -309,7 +309,7 @@ SP                        = require '../..'
 
 
 ############################################################################################################
-unless module.parent?
+if module is require.main then do => # await do =>
   test @, 'timeout': 30000
   # test @[ "leapfrogging compared to wye" ]
   # test @[ "wye construction (sync)" ]
