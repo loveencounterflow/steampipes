@@ -217,6 +217,7 @@ echo                      = CND.echo.bind CND
 
 #-----------------------------------------------------------------------------------------------------------
 @_integrate_wye = ( transforms, wye_idx ) ->
+  throw new Error "not yet implemented"
   last        = Symbol 'last'
   #.........................................................................................................
   source_A    = probe_A
@@ -262,7 +263,7 @@ echo                      = CND.echo.bind CND
 
 #-----------------------------------------------------------------------------------------------------------
 @_integrate_wyes = ( transforms... ) ->
-  debug '^776665^', transforms
+  # debug '^776665^', transforms
   # for transform, wye_idx in transforms
   #   if transform[ @marks.isa_wye ]
   #     return @_integrate_wye transforms, wye_idx

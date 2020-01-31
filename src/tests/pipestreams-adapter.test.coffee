@@ -28,11 +28,16 @@ SP                        = require '../..'
   $async
   $watch
   $show  }                = SP.export()
-PD                        = require 'pipedreams'
 
 
 #-----------------------------------------------------------------------------------------------------------
 @[ "adapt 1" ] = ( T, done ) ->
+  try PD = require 'pipedreams' catch error
+    throw error unless error.code is 'MODULE_NOT_FOUND'
+    message = "^33877^ must install pipedreams to run adapter test; skipping"
+    warn message
+    # T.fail message
+    return done()
   probe   = "just a bunch of words really".split /\s+/
   matcher = [ probe..., ]
   error   = null
