@@ -160,8 +160,9 @@ $send_three = ->
     PATH      = require 'path'
     path      = PATH.join __dirname, '../../package.json'
     sources   = [
-      ( SP.read_from_file path                       )
-      ( [ ( ( require 'fs' ).readFileSync path ), ]  )
+      # ( await SP._KLUDGE_file_as_buffers path         )
+      ( SP.read_from_file path                        )
+      ( [ ( ( require 'fs' ).readFileSync path ), ]   )
       ]
     for source in sources
       await do ( source ) => new Promise ( resolve ) =>

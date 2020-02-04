@@ -44,6 +44,15 @@ types                     = require './types'
   return source
 
 #-----------------------------------------------------------------------------------------------------------
+@_KLUDGE_file_as_buffers = ( path, byte_count = 65536 ) -> new Promise ( resolve ) =>
+  pipeline  = []
+  pipeline.push @read_from_file path, byte_count
+  pipeline.push @$pass()
+  pipeline.push @$drain ( buffers ) => resolve buffers
+  @pull pipeline...
+  return null
+
+#-----------------------------------------------------------------------------------------------------------
 @$split = ( splitter = '\n', decode = true ) ->
   ### thx to https://github.com/maxogden/binary-split/blob/master/index.js ###
   validate.nonempty_text splitter
