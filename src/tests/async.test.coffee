@@ -20,8 +20,11 @@ SP                        = require '../..'
 { $
   $async
   $watch
+  $drain
   $show }                 = SP.export()
 defer                     = setImmediate
+sleep                     = ( dts ) -> new Promise ( done ) -> setTimeout done, dts * 1000
+
 
 #-----------------------------------------------------------------------------------------------------------
 after = ( dts, f ) -> setTimeout f, dts * 1000
@@ -98,11 +101,88 @@ $send_three = ->
   SP.pull pipeline...
   return null
 
+#-----------------------------------------------------------------------------------------------------------
+@[ "async 3" ] = ( T, done ) ->
+  probe   = [ 2, 3, 5, 7, ]
+  matcher = [ 2, 4, 4, 3, 6, 9, 5, 10, 25, 7, 14, 49, ]
+  #.........................................................................................................
+  $multiply = ->
+    exec = ( require 'util' ).promisify ( require 'child_process' ).exec
+    FSP = ( require 'fs' ).promises
+    return $async ( d, send, done ) =>
+      debug '^787^', d
+      defer =>
+        send d
+        await sleep 0.1
+        text = await FSP.readFile __filename, { encoding: 'utf-8', }
+        debug '^030^', jr text[ 100 .. 200 ]
+        send d * 2
+        await sleep 0.1
+        debug '^3344^', jr await exec 'ls'
+        send d ** 2
+        await sleep 0.1
+        done()
+  #.........................................................................................................
+  do =>
+    pipeline = []
+    pipeline.push probe
+    pipeline.push $watch ( d ) => help CND.grey   'before', jr d
+    pipeline.push $multiply()
+    pipeline.push $watch ( d ) => help CND.white  'after ', jr d
+    pipeline.push $drain ( result ) ->
+      debug jr result
+      T.eq result, matcher
+      done()
+    SP.pull pipeline...
+    return null
+
+#-----------------------------------------------------------------------------------------------------------
+@[ "async 4 w/ async source" ] = ( T, done ) ->
+  #.........................................................................................................
+  $frobulate = ->
+    exec    = ( require 'util' ).promisify ( require 'child_process' ).exec
+    FSP     = ( require 'fs' ).promises
+    return $async ( d, send, done ) =>
+      if d isnt '{'
+        send d
+        return done()
+      send 'async started'
+      info '^787^', d
+      send d
+      urge 'before'
+      text = await FSP.readFile __filename, { encoding: 'utf-8', }
+      urge 'after'
+      # info '^030^', jr text[ 100 .. 200 ]
+      send 'async complete'
+      return done()
+  #.........................................................................................................
+  do =>
+    PATH      = require 'path'
+    path      = PATH.join __dirname, '../../package.json'
+    sources   = [
+      ( SP.read_from_file path                       )
+      ( [ ( ( require 'fs' ).readFileSync path ), ]  )
+      ]
+    for source in sources
+      await do ( source ) => new Promise ( resolve ) =>
+        pipeline  = []
+        pipeline.push source
+        pipeline.push SP.$split()
+        pipeline.push $frobulate()
+        # pipeline.push $show()
+        pipeline.push $drain ( result ) ->
+          T.fail "did not receive 'async started'"  unless ( 'async started'  in result )
+          T.fail "did not receive 'async complete'" unless ( 'async complete' in result )
+          resolve()
+        SP.pull pipeline...
+    done()
+    return null
+
 
 ############################################################################################################
 unless module.parent?
-  test @, { timeout: 10000, }
-  # test @[ "async 0" ], { timeout: 10000, }
+  # test @, { timeout: 10000, }
+  test @[ "async 4 w/ async source" ]
   # test @[ "async 2" ], { timeout: 10000, }
 
 
