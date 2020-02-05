@@ -118,7 +118,7 @@ e.g. `$surround { first: 'first!', between: 'to appear in-between two values', }
 @leapfrog = ( jumper, transform ) -> @$ { leapfrog: jumper, }, transform
 
 #-----------------------------------------------------------------------------------------------------------
-@$before = ( transform ) ->
+@$before_first = ( transform ) ->
   ### Call transform once before any data item comes down the stream (if any). Transform must only accept
   a single `send` argument and can send as many data items down the stream which will be prepended
   to those items coming from upstream. ###
@@ -133,7 +133,7 @@ e.g. `$surround { first: 'first!', between: 'to appear in-between two values', }
     return null
 
 #-----------------------------------------------------------------------------------------------------------
-@$after = ( transform ) ->
+@$after_last = ( transform ) ->
   ### Call transform once after any data item comes down the stream (if any). Transform must only accept
   a single `send` argument and can send as many data items down the stream which will be appended
   to those items coming from upstream. ###
