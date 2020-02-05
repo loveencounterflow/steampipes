@@ -99,6 +99,8 @@ drain has been constructed and is started with `pull()`.
 * `{ first, last, before, after, between, }`
 * `$before_first()`
 * `$after_last()`
+* `$async_before_first()`
+* `$async_after_last()`
 
 
 ### Sinks
