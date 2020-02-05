@@ -11,6 +11,7 @@
 - [How to Construct Sources, Transforms, and Sinks](#how-to-construct-sources-transforms-and-sinks)
   - [Sources](#sources)
   - [Transforms](#transforms)
+  - [Modifiers and `$before_first()`, `$after_last()`](#modifiers-and-before_first-after_last)
   - [Sinks](#sinks)
 - [Asynchronous Sources and Transforms](#asynchronous-sources-and-transforms)
 - [Ducts](#ducts)
@@ -19,6 +20,7 @@
 - [Aborting Streams](#aborting-streams)
 - [Updates](#updates)
 - [To Do](#to-do)
+  - [Future: JS Pipeline Operator](#future-js-pipeline-operator)
   - [To Do: Railway-Oriented Programming](#to-do-railway-oriented-programming)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
@@ -91,6 +93,12 @@ drain has been constructed and is started with `pull()`.
 * Calling `$ whatever..., ( d, send ) -> ...` is always equivalent to calling `modify whatever..., $ ( d,
   send ) -> ...`; calling `modify t` without any further arguments is equivalent to `t` (the transform
   itself).
+
+### Modifiers and `$before_first()`, `$after_last()`
+
+* `{ first, last, before, after, between, }`
+* `$before_first()`
+* `$after_last()`
 
 
 ### Sinks
