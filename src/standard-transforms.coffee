@@ -128,6 +128,7 @@ e.g. `$surround { first: 'first!', between: 'to appear in-between two values', }
   first = Symbol 'first'
   return @$ { first, }, ( d, send ) =>
     return send d unless d is first
+    ### TAINT missing `send.end()` method ###
     transform sink.push.bind sink
     send d_ for d_ in sink
     return null
@@ -143,9 +144,56 @@ e.g. `$surround { first: 'first!', between: 'to appear in-between two values', }
   last  = Symbol 'last'
   return @$ { last, }, ( d, send ) =>
     return send d unless d is last
+    ### TAINT missing `send.end()` method ###
     transform sink.push.bind sink
     send d_ for d_ in sink
     return null
+
+#-----------------------------------------------------------------------------------------------------------
+@$async_before_first = ( transform ) ->
+  ### Call transform once before any data item comes down the stream (if any). Transform must only accept
+  a single `send` argument and can send as many data items down the stream which will be prepended
+  to those items coming from upstream. ###
+  unless ( arity = transform.length ) is 2
+    throw new Error "^steampipes/pullremit@7033^ transform arity #{arity} not implemented"
+  sink      = []
+  pipeline  = []
+  first     = Symbol 'first'
+  pipeline.push @$ { first, }, ( d, send ) => send d
+  pipeline.push @$async ( d, send, done ) =>
+    unless d is first
+      send d
+      return done()
+    ### TAINT missing `send.end()` method ###
+    await transform ( sink.push.bind sink ), =>
+      send d_ for d_ in sink
+      done()
+    return null
+  return @pull pipeline...
+
+#-----------------------------------------------------------------------------------------------------------
+@$async_after_last = ( transform ) ->
+  ### Call transform once before any data item comes down the stream (if any). Transform must only accept
+  a single `send` argument and can send as many data items down the stream which will be prepended
+  to those items coming from upstream. ###
+  unless ( arity = transform.length ) is 2
+    throw new Error "^steampipes/pullremit@7034^ transform arity #{arity} not implemented"
+  sink      = []
+  pipeline  = []
+  last      = Symbol 'last'
+  pipeline.push @$ { last, }, ( d, send ) => send d
+  pipeline.push @$async ( d, send, done ) =>
+    unless d is last
+      send d
+      return done()
+    ### TAINT missing `send.end()` method ###
+    await transform ( sink.push.bind sink ), =>
+      send d_ for d_ in sink
+      done()
+    return null
+  return @pull pipeline...
+
+
 
 
 

@@ -99,12 +99,82 @@ jr                        = JSON.stringify
   #.........................................................................................................
   return null
 
+#-----------------------------------------------------------------------------------------------------------
+@[ "modifiers ($async_before_first)" ] = ( T, done ) ->
+  SP = require '../..'
+  #.........................................................................................................
+  { $
+    $async
+    $drain
+    $async_before_first
+    $show } = SP.export()
+  #.........................................................................................................
+  $transform = =>
+    return $async_before_first ( send, done ) ->
+      debug '^12287^'
+      defer ->
+        send "may I introduce"
+        done()
+      return null
+  #.........................................................................................................
+  do =>
+    source    = "Behind the Looking-Glass".split /\s+/
+    matcher   = ["may I introduce","Behind","the","Looking-Glass"]
+    pipeline  = []
+    pipeline.push source
+    pipeline.push $transform()
+    pipeline.push $show()
+    pipeline.push $drain ( result ) =>
+      help jr result
+      T.eq result, matcher
+      done()
+    SP.pull pipeline...
+    return null
+  #.........................................................................................................
+  return null
+
+#-----------------------------------------------------------------------------------------------------------
+@[ "modifiers ($async_after_last)" ] = ( T, done ) ->
+  SP = require '../..'
+  #.........................................................................................................
+  { $
+    $async
+    $drain
+    $async_after_last
+    $show } = SP.export()
+  #.........................................................................................................
+  $transform = =>
+    return $async_after_last ( send, done ) ->
+      debug '^12287^'
+      defer ->
+        send "is an interesting book"
+        done()
+      return null
+  #.........................................................................................................
+  do =>
+    source    = "Behind the Looking-Glass".split /\s+/
+    matcher   = ["Behind","the","Looking-Glass","is an interesting book"]
+    pipeline  = []
+    pipeline.push source
+    pipeline.push $transform()
+    pipeline.push $show()
+    pipeline.push $drain ( result ) =>
+      help jr result
+      T.eq result, matcher
+      done()
+    SP.pull pipeline...
+    return null
+  #.........................................................................................................
+  return null
+
 
 ############################################################################################################
 unless module.parent?
-  test @
+  # test @
   # test @[ "modifiers ($before_first)" ]
   # test @[ "modifiers ($after_last)" ]
+  # test @[ "modifiers ($async_before_first)" ]
+  test @[ "modifiers ($async_after_last)" ]
 
 
 
