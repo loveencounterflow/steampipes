@@ -117,6 +117,35 @@ e.g. `$surround { first: 'first!', between: 'to appear in-between two values', }
 #-----------------------------------------------------------------------------------------------------------
 @leapfrog = ( jumper, transform ) -> @$ { leapfrog: jumper, }, transform
 
+#-----------------------------------------------------------------------------------------------------------
+@$before = ( transform ) ->
+  ### Call transform once before any data item comes down the stream (if any). Transform must only accept
+  a single `send` argument and can send as many data items down the stream which will be prepended
+  to those items coming from upstream. ###
+  unless ( arity = transform.length ) is 1
+    throw new Error "^steampipes/pullremit@7033^ transform arity #{arity} not implemented"
+  sink  = []
+  first = Symbol 'first'
+  return @$ { first, }, ( d, send ) =>
+    return send d unless d is first
+    transform sink.push.bind sink
+    send d_ for d_ in sink
+    return null
+
+#-----------------------------------------------------------------------------------------------------------
+@$after = ( transform ) ->
+  ### Call transform once after any data item comes down the stream (if any). Transform must only accept
+  a single `send` argument and can send as many data items down the stream which will be appended
+  to those items coming from upstream. ###
+  unless ( arity = transform.length ) is 1
+    throw new Error "^steampipes/pullremit@7033^ transform arity #{arity} not implemented"
+  sink  = []
+  last  = Symbol 'last'
+  return @$ { last, }, ( d, send ) =>
+    return send d unless d is last
+    transform sink.push.bind sink
+    send d_ for d_ in sink
+    return null
 
 
 
