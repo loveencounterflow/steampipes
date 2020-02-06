@@ -22,28 +22,21 @@ echo                      = CND.echo.bind CND
   validate
   type_of }               = @types
 Multimix                  = require 'multimix'
-FS                        = require 'fs'
 
 #-----------------------------------------------------------------------------------------------------------
 class Steampipes extends Multimix
-  # @extend   object_with_class_properties
-  filenames = FS.readdirSync __dirname
-  for filename in filenames
-    continue unless filename.endsWith '.js'
-    continue if filename.startsWith '_'
-    continue if filename is 'main.js'
-    continue if filename is 'types.js'
-    path = './' + filename
-    @include require path
+  @include require './modify'
+  @include require './njs-streams-and-files'
+  @include require './pipestreams-adapter'
+  @include require './pull-remit'
+  @include require './sort'
+  @include require './sources'
+  @include require './standard-transforms'
+  @include require './text'
 
   #---------------------------------------------------------------------------------------------------------
   constructor: ( @settings = null ) ->
     super()
-    @HTML = require './_html-parser'
-    # @specs    = {}
-    # @isa      = Multimix.get_keymethod_proxy @, isa
-    # # @validate = Multimix.get_keymethod_proxy @, validate
-    # declarations.declare_types.apply @
 
 ############################################################################################################
 module.exports 	= L = new Steampipes()
