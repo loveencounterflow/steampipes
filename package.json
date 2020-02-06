@@ -28,11 +28,11 @@
   "dependencies": {
     "@uppy/fs-tail-stream": "^1.2.0",
     "atlas-html-stream": "^1.2.0",
-    "cnd": "^5.0.0",
-    "datom": "^3.0.0",
-    "intertype": "^3.1.0",
+    "cnd": "^5.3.0",
+    "datom": "^3.0.1",
+    "intertype": "^3.1.1",
     "letsfreezethat": "^2.2.5",
-    "multimix": "^2.1.1"
+    "multimix": "^2.1.2"
   },
   "devDependencies": {
     "guy-test": "^1.4.1"
