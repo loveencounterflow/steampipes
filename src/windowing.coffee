@@ -18,11 +18,23 @@ echo                      = CND.echo.bind CND
 { jr }                    = CND
 assign                    = Object.assign
 #...........................................................................................................
+types                     = require './types'
 { isa
   validate
-  type_of }               = require './types'
+  type_of }               = types
 misfit                    = Symbol 'misfit'
 
+#-----------------------------------------------------------------------------------------------------------
+types.declare 'pipestreams_$window_settings',
+  tests:
+    "x is an object":                         ( x ) -> @isa.object x
+    "x.width is a positive":                  ( x ) -> @isa.positive x.width
+
+#-----------------------------------------------------------------------------------------------------------
+types.declare 'pipestreams_$lookaround_settings',
+  tests:
+    "x is an object":                         ( x ) -> @isa.object x
+    "x.delta is a count":                     ( x ) -> @isa.count x.delta
 
 #-----------------------------------------------------------------------------------------------------------
 @$window = ( settings ) ->
@@ -97,6 +109,7 @@ misfit                    = Symbol 'misfit'
     else throw new Error "µ23111 expected 1 or 2 arguments, got #{arity}"
   #.........................................................................................................
   if ( leapfrog = settings?.leapfrog )?
+    throw new Error "µ65532 leapfrogging with windowing not yet implemented"
     delete settings.leapfrog
   #.........................................................................................................
   pipeline = []
@@ -104,9 +117,9 @@ misfit                    = Symbol 'misfit'
   pipeline.push transform
   R = @pull pipeline...
   #.........................................................................................................
-  if leapfrog?
-    return @leapfrog leapfrog, R
-  #.........................................................................................................
+  # if leapfrog?
+  #   return @leapfrog leapfrog, R
+  # #.........................................................................................................
   return R
 
 #-----------------------------------------------------------------------------------------------------------
@@ -118,6 +131,7 @@ misfit                    = Symbol 'misfit'
     else throw new Error "µ23112 expected 1 or 2 arguments, got #{arity}"
   #.........................................................................................................
   if ( leapfrog = settings?.leapfrog )?
+    throw new Error "µ65533 leapfrogging with lookaround not yet implemented"
     delete settings.leapfrog
   #.........................................................................................................
   pipeline = []

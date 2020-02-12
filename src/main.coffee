@@ -33,6 +33,7 @@ class Steampipes extends Multimix
   @include require './sources'
   @include require './standard-transforms'
   @include require './text'
+  @include require './windowing'
 
   #---------------------------------------------------------------------------------------------------------
   constructor: ( @settings = null ) ->
