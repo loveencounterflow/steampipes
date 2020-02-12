@@ -283,7 +283,9 @@ catch error
   to signal finishing, synchronous transforms don't have that, so it is not clear how to deal with a
   situation where a transform happens to decide it doesn't want to `send()` anything (although, the
   transform does return (stop running), so that might be a way)
- * [ ] explain why using only `yield` instead of `send()` is not a good idea
+* [ ] explain why using only `yield` instead of `send()` is not a good idea
+* [ ] make `$split()` work with both streams and buffers
+
 
 ### Future: JS Pipeline Operator
 
