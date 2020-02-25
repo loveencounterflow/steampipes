@@ -285,6 +285,8 @@ catch error
   transform does return (stop running), so that might be a way)
 * [ ] explain why using only `yield` instead of `send()` is not a good idea
 * [ ] make `$split()` work with both streams and buffers
+<!-- * [ ] implement `window` modifier as in, `$ { window: { width: 2, fallback: null,}, }, ( d, send ) -> -->
+* [ ] implement `send.skip n` (or `send.drop n`) to drop next n datoms
 
 
 ### Future: JS Pipeline Operator
