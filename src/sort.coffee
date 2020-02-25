@@ -34,12 +34,14 @@ debug                     = CND.get_logger 'debug',     badge
   direction = 'ascending'
   sorter    = null
   key       = null
+  strict    = true
   switch arity = arguments.length
     when 0 then null
     when 1
       direction = settings[ 'direction' ] ? 'ascending'
       sorter    = settings[ 'sorter'    ] ? null
       key       = settings[ 'key'       ] ? null
+      strict    = settings[ 'strict'    ] ? true
     else throw new Error "µ33893 expected 0 or 1 arguments, got #{arity}"
   #.........................................................................................................
   unless direction in [ 'ascending', 'descending', ]
@@ -67,18 +69,21 @@ debug                     = CND.get_logger 'debug',     badge
       sorter = ( a, b ) =>
         a = a[ key ]
         b = b[ key ]
-        validate_type ( type_of a ), ( type_of b ), no
+        if strict
+          validate_type ( type_of a ), ( type_of b ), no
         return +1 if ( if direction is 'ascending' then a > b else a < b )
         return -1 if ( if direction is 'ascending' then a < b else a > b )
         return  0
     #.......................................................................................................
     else
       sorter = ( a, b ) =>
-        validate_type ( type_a = type_of a ), ( type_b = type_of b ), yes
+        if strict
+          validate_type ( type_a = type_of a ), ( type_b = type_of b ), yes
         if type_a is 'list'
           a = a[ 0 ]
           b = b[ 0 ]
-          validate_type ( type_of a ), ( type_of b ), no
+          if strict
+            validate_type ( type_of a ), ( type_of b ), no
         return +1 if ( if direction is 'ascending' then a > b else a < b )
         return -1 if ( if direction is 'ascending' then a < b else a > b )
         return  0
