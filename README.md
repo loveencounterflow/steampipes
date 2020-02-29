@@ -287,7 +287,9 @@ catch error
 * [ ] make `$split()` work with both streams and buffers
 <!-- * [ ] implement `window` modifier as in, `$ { window: { width: 2, fallback: null,}, }, ( d, send ) -> -->
 * [ ] implement `send.skip n` (or `send.drop n`) to drop next n datoms
-
+* [ ] fix reading from, writing to files
+* [ ] implement `$split_tsv()`
+* [ ] implement `$ { once: [ 'first', 'last', ], }, transform (d, send ) ->`
 
 ### Future: JS Pipeline Operator
 
