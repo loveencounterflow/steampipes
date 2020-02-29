@@ -118,7 +118,7 @@ e.g. `$surround { first: 'first!', between: 'to appear in-between two values', }
 @leapfrog = ( jumper, transform ) -> @$ { leapfrog: jumper, }, transform
 
 #-----------------------------------------------------------------------------------------------------------
-@$before_first = ( transform ) ->
+@$once_before_first = ( transform ) ->
   ### Call transform once before any data item comes down the stream (if any). Transform must only accept
   a single `send` argument and can send as many data items down the stream which will be prepended
   to those items coming from upstream. ###
@@ -134,7 +134,17 @@ e.g. `$surround { first: 'first!', between: 'to appear in-between two values', }
     return null
 
 #-----------------------------------------------------------------------------------------------------------
-@$after_last = ( transform ) ->
+@$once_with_first = ( transform ) ->
+  ### Call transform once with the first data item (if any). ###
+  is_first = true
+  return @$ ( d, send ) =>
+    return send d unless is_first
+    is_first = false
+    transform d, send
+    return null
+
+#-----------------------------------------------------------------------------------------------------------
+@$once_after_last = ( transform ) ->
   ### Call transform once after any data item comes down the stream (if any). Transform must only accept
   a single `send` argument and can send as many data items down the stream which will be appended
   to those items coming from upstream. ###
@@ -150,7 +160,7 @@ e.g. `$surround { first: 'first!', between: 'to appear in-between two values', }
     return null
 
 #-----------------------------------------------------------------------------------------------------------
-@$async_before_first = ( transform ) ->
+@$once_async_before_first = ( transform ) ->
   ### Call transform once before any data item comes down the stream (if any). Transform must only accept
   a single `send` argument and can send as many data items down the stream which will be prepended
   to those items coming from upstream. ###
@@ -172,7 +182,7 @@ e.g. `$surround { first: 'first!', between: 'to appear in-between two values', }
   return @pull pipeline...
 
 #-----------------------------------------------------------------------------------------------------------
-@$async_after_last = ( transform ) ->
+@$once_async_after_last = ( transform ) ->
   ### Call transform once before any data item comes down the stream (if any). Transform must only accept
   a single `send` argument and can send as many data items down the stream which will be prepended
   to those items coming from upstream. ###

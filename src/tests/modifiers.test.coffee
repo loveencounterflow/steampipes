@@ -1,4 +1,6 @@
 
+'use strict'
+
 
 ############################################################################################################
 CND                       = require 'cnd'
@@ -38,17 +40,17 @@ jr                        = JSON.stringify
 
 
 #-----------------------------------------------------------------------------------------------------------
-@[ "modifiers ($before_first)" ] = ( T, done ) ->
+@[ "modifiers ($once_before_first)" ] = ( T, done ) ->
   SP = require '../..'
   #.........................................................................................................
   { $
     $async
     $drain
-    $before_first
+    $once_before_first
     $show } = SP.export()
   #.........................................................................................................
   $transform = =>
-    return $before_first ( send ) ->
+    return $once_before_first ( send ) ->
       debug '^12287^'
       send "may I introduce"
   #.........................................................................................................
@@ -69,17 +71,43 @@ jr                        = JSON.stringify
   return null
 
 #-----------------------------------------------------------------------------------------------------------
-@[ "modifiers ($after_last)" ] = ( T, done ) ->
+@[ "modifiers ($once_with_first)" ] = ( T, done ) ->
   SP = require '../..'
   #.........................................................................................................
   { $
     $async
     $drain
-    $after_last
+    $once_with_first
+    $show } = SP.export()
+  #.........................................................................................................
+  do =>
+    source    = "Behind the Looking-Glass".split /\s+/
+    matcher   = ["Behold!—Behind","the","Looking-Glass"]
+    pipeline  = []
+    pipeline.push source
+    pipeline.push $once_with_first ( d, send ) -> send "Behold!—" + d
+    pipeline.push $show()
+    pipeline.push $drain ( result ) =>
+      help jr result
+      T.eq result, matcher
+      done()
+    SP.pull pipeline...
+    return null
+  #.........................................................................................................
+  return null
+
+#-----------------------------------------------------------------------------------------------------------
+@[ "modifiers ($once_after_last)" ] = ( T, done ) ->
+  SP = require '../..'
+  #.........................................................................................................
+  { $
+    $async
+    $drain
+    $once_after_last
     $show } = SP.export()
   #.........................................................................................................
   $transform = =>
-    return $after_last ( send ) ->
+    return $once_after_last ( send ) ->
       debug '^12287^'
       send "is an interesting book"
   #.........................................................................................................
@@ -100,17 +128,17 @@ jr                        = JSON.stringify
   return null
 
 #-----------------------------------------------------------------------------------------------------------
-@[ "modifiers ($async_before_first)" ] = ( T, done ) ->
+@[ "modifiers ($once_async_before_first)" ] = ( T, done ) ->
   SP = require '../..'
   #.........................................................................................................
   { $
     $async
     $drain
-    $async_before_first
+    $once_async_before_first
     $show } = SP.export()
   #.........................................................................................................
   $transform = =>
-    return $async_before_first ( send, done ) ->
+    return $once_async_before_first ( send, done ) ->
       debug '^12287^'
       defer ->
         send "may I introduce"
@@ -134,17 +162,17 @@ jr                        = JSON.stringify
   return null
 
 #-----------------------------------------------------------------------------------------------------------
-@[ "modifiers ($async_after_last)" ] = ( T, done ) ->
+@[ "modifiers ($once_async_after_last)" ] = ( T, done ) ->
   SP = require '../..'
   #.........................................................................................................
   { $
     $async
     $drain
-    $async_after_last
+    $once_async_after_last
     $show } = SP.export()
   #.........................................................................................................
   $transform = =>
-    return $async_after_last ( send, done ) ->
+    return $once_async_after_last ( send, done ) ->
       debug '^12287^'
       defer ->
         send "is an interesting book"
@@ -170,11 +198,11 @@ jr                        = JSON.stringify
 
 ############################################################################################################
 unless module.parent?
-  # test @
-  # test @[ "modifiers ($before_first)" ]
-  # test @[ "modifiers ($after_last)" ]
-  # test @[ "modifiers ($async_before_first)" ]
-  test @[ "modifiers ($async_after_last)" ]
+  test @
+  # test @[ "modifiers ($once_before_first)" ]
+  # test @[ "modifiers ($once_after_last)" ]
+  # test @[ "modifiers ($once_async_before_first)" ]
+  # test @[ "modifiers ($once_async_after_last)" ]
 
 
 
