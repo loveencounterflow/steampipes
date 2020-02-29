@@ -94,6 +94,7 @@ sort = ( values ) -> new Promise ( resolve, reject ) =>
       pipeline.push SP.$drain ( result ) -> resolve result
       SP.pull pipeline...
       # resolve await sort probe
+  #.........................................................................................................
   done()
   return null
 
