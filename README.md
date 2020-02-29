@@ -289,7 +289,18 @@ catch error
 * [ ] implement `send.skip n` (or `send.drop n`) to drop next n datoms
 * [ ] fix reading from, writing to files
 * [ ] implement `$split_tsv()`
-* [ ] implement `$ { once: [ 'first', 'last', ], }, transform (d, send ) ->`
+* [ ] implement
+  * `$once_before_first()`
+  * `$once_after_last()`
+  * `$once_async_before_first()`
+  * `$once_async_after_last()`
+  * `$once_with_first()`
+  * `$once_async_with_first()`
+  * `$once_with_last()`
+  * `$once_async_with_last()`
+  * `$once_with_nth()`
+  * `$once_async_with_nth()`
+  using modifiers instead (`$ { once: [ 'first', 'last', ], }, transform (d, send ) ->`) to avoid API bloat
 
 ### Future: JS Pipeline Operator
 
