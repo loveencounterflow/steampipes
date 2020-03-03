@@ -211,7 +211,7 @@ e.g. `$surround { first: 'first!', between: 'to appear in-between two values', }
   pipeline.push source
   pipeline.push bystream
   @pull pipeline...
-  return $ { last, }, ( d, send ) =>
+  return @$ { last, }, ( d, send ) =>
     return source.end() if d is last
     source.send d
     send d
