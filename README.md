@@ -301,6 +301,9 @@ catch error
   * `$once_with_nth()`
   * `$once_async_with_nth()`
   using modifiers instead (`$ { once: [ 'first', 'last', ], }, transform (d, send ) ->`) to avoid API bloat
+* [ ] implement tees which are like branching tracks that lead to their own sinks; there should also
+  be parallel tracks that are rejoined later on
+
 
 ### Future: JS Pipeline Operator
 
