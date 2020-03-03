@@ -203,6 +203,18 @@ e.g. `$surround { first: 'first!', between: 'to appear in-between two values', }
     return null
   return @pull pipeline...
 
+#-----------------------------------------------------------------------------------------------------------
+@$tee = ( bystream ) ->
+  source    = @new_push_source()
+  last      = Symbol 'last'
+  pipeline  = []
+  pipeline.push source
+  pipeline.push bystream
+  @pull pipeline...
+  return $ { last, }, ( d, send ) =>
+    return source.end() if d is last
+    source.send d
+    send d
 
 
 
