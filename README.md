@@ -304,6 +304,12 @@ catch error
 * [x] implement tees which are like branching tracks that lead to their own sinks
 * [ ] there should also be parallel tracks that are rejoined later on
 * [x] should tees accept single transforms (and implicitly build a pipeline with a sink)? [NO]
+* [ ] obscure bug: when a transform with `{ first, last, }` modifiers is used and uses the `$`/`remit`
+  method of *another* instance of the SteamPipes library, then that transform will get to see the `first`
+  value, but *not the `last`*; presumably, this is caused by the buckets not being shared between the
+  pipeline at large and the transform?
+
+
 
 ### Future: JS Pipeline Operator
 
