@@ -71,7 +71,7 @@ is valid.
 
 In addition, synchronous and asynchronous functions that, when called without arguments, return a value for
 which one of the iteration modes (sync or async) works correctly are allowed. Such a function will be called
-as late as possible, that is, not at pipline definition time, but only when a pipeline with a source and a
+as late as possible, that is, not at pipeline definition time, but only when a pipeline with a source and a
 drain has been constructed and is started with `pull()`.
 
 
@@ -301,9 +301,9 @@ catch error
   * `$once_with_nth()`
   * `$once_async_with_nth()`
   using modifiers instead (`$ { once: [ 'first', 'last', ], }, transform (d, send ) ->`) to avoid API bloat
-* [ ] implement tees which are like branching tracks that lead to their own sinks; there should also
-  be parallel tracks that are rejoined later on
-
+* [x] implement tees which are like branching tracks that lead to their own sinks
+* [ ] there should also be parallel tracks that are rejoined later on
+* [x] should tees accept single transforms (and implicitly build a pipeline with a sink)? [NO]
 
 ### Future: JS Pipeline Operator
 
