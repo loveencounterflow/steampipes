@@ -1,6 +1,6 @@
 {
   "name": "steampipes",
-  "version": "6.1.1",
+  "version": "6.1.2",
   "description": "Fast, simple data pipelines",
   "main": "lib/main.js",
   "scripts": {
