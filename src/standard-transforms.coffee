@@ -58,9 +58,9 @@ assign                    = Object.assign
 
 #-----------------------------------------------------------------------------------------------------------
 @$show = ( settings ) ->
-  title = ( settings?.title ? '-->' ) + ' '
+  title = ( settings?.title ? 'steampipes ➔' ) + ' '
   return @$ ( d, send ) =>
-    info title + jr d
+    echo ( CND.grey title ) + ( CND.blue rpr d )
     send d
 
 #-----------------------------------------------------------------------------------------------------------
