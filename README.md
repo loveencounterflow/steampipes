@@ -317,7 +317,8 @@ catch error
 * [ ] bug: async functions passed into `$drain()`, attached to `push_source.start` and possibly other places
   are not called or not called with `await`, thus causing silent failures. Must always reject loudly where
   detected or be handled appropriately.
-
+* [ ] implement `$chunkify()` (as configurable variant of `$collect()`?); see code comment in standard
+  transforms
 
 ### Future: JS Pipeline Operator
 
