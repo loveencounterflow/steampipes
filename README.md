@@ -308,12 +308,15 @@ catch error
   method of *another* instance of the SteamPipes library, then that transform will get to see the `first`
   value, but *not the `last`*; presumably, this is caused by the buckets not being shared between the
   pipeline at large and the transform?
-* [ ] obscure bug: when a push source is used with a stream that comes from another instance of the
+* [X] obscure bug: when a push source is used with a stream that comes from another instance of the
   SteamPipes library (as in, `( require 'pathA/steampipes' ).new_push_source()` is used in a pipeline that
   is activated by) `( require 'pathB/steampipes' ).pull pipeline...`) and error with message
   `^steampipes/pullremit@7003^ expected an iterable, a function, a generator function or a sink, got a
   object` results. The message should at least hint point at the probable error cause or be avoided at all.
-
+  **FIXED in v6.2**: replaced `Symbol 'xy'` with `Symbol.from 'steampipes/xy'` in `SP.marks`.
+* [ ] bug: async functions passed into `$drain()`, attached to `push_source.start` and possibly other places
+  are not called or not called with `await`, thus causing silent failures. Must always reject loudly where
+  detected or be handled appropriately.
 
 
 ### Future: JS Pipeline Operator
