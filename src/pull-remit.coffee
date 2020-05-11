@@ -27,19 +27,19 @@ echo                      = CND.echo.bind CND
 #-----------------------------------------------------------------------------------------------------------
 ### Signals are special values that, when sent down the pipeline, may alter behavior: ###
 @signals = Object.freeze
-  last:             Symbol 'last'             # Used to signal last data item
-  end:              Symbol 'end'              # Request stream to terminate
+  last:             Symbol.for 'steampipes/last'        # Used to signal last data item
+  end:              Symbol.for 'steampipes/end'         # Request stream to terminate
 
 #-----------------------------------------------------------------------------------------------------------
 ### Marks are special values that identify types, behavior of pipeline elements etc: ###
 @marks = Object.freeze
-  steampipes:       Symbol 'steampipes'       # Marks steampipes objects
-  validated:        Symbol 'validated'        # Marks a validated sink
-  isa_duct:         Symbol 'isa_duct'         # Marks a duct as such
-  isa_pusher:       Symbol 'isa_pusher'       # Marks a push source as such
-  isa_wye:          Symbol 'isa_wye'          # Marks an intermediate source
-  send_last:        Symbol 'send_last'        # Marks transforms expecting a certain value before EOS
-  async:            Symbol 'async'            # Marks transforms as asynchronous (experimental)
+  steampipes:       Symbol.for 'steampipes/steampipes'  # Marks steampipes objects
+  validated:        Symbol.for 'steampipes/validated'   # Marks a validated sink
+  isa_duct:         Symbol.for 'steampipes/isa_duct'    # Marks a duct as such
+  isa_pusher:       Symbol.for 'steampipes/isa_pusher'  # Marks a push source as such
+  isa_wye:          Symbol.for 'steampipes/isa_wye'     # Marks an intermediate source
+  send_last:        Symbol.for 'steampipes/send_last'   # Marks transforms expecting a certain value before EOS
+  async:            Symbol.for 'steampipes/async'       # Marks transforms as asynchronous (experimental)
 
 
 #===========================================================================================================
