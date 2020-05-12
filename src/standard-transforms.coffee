@@ -110,6 +110,30 @@ assign                    = Object.assign
     return null
 
 #-----------------------------------------------------------------------------------------------------------
+@$chunkify_keep = ( filter, postprocess = null ) -> @_$chunkify filter, postprocess, true
+@$chunkify_toss = ( filter, postprocess = null ) -> @_$chunkify filter, postprocess, false
+
+#-----------------------------------------------------------------------------------------------------------
+@_$chunkify = ( filter, postprocess, keep ) ->
+  postprocess      ?= ( x ) -> x
+  validate.function filter
+  validate.function postprocess
+  collector         = null
+  last              = Symbol 'last'
+  #.........................................................................................................
+  return @$ { last, }, ( d, send ) ->
+    if d is last
+      if collector? then send postprocess collector; collector = null
+      return null
+    if filter d
+      if keep
+        ( collector ?= [] ).push d
+      if collector? then send postprocess collector; collector = null
+      return null
+    ( collector ?= [] ).push d
+    return null
+
+#-----------------------------------------------------------------------------------------------------------
 ### Given a `settings` object, add values to the stream as `$ settings, ( d, send ) -> send d` would do,
 e.g. `$surround { first: 'first!', between: 'to appear in-between two values', }`. ###
 @$surround = ( settings ) -> @$ settings, ( d, send ) => send d

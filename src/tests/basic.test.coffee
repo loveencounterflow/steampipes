@@ -558,6 +558,94 @@ jr                        = JSON.stringify
   done()
   return null
 
+#-----------------------------------------------------------------------------------------------------------
+@[ "$chunkify_keep no postprocessing" ] = ( T, done ) ->
+  probes_and_matchers = [
+    [ [], [], null ]
+    [ 'abcdefg', [ [ 'a', 'b', 'c', 'd', 'e', 'f', 'g' ] ], null ]
+    [ 'ab(cdefg)', [ [ 'a', 'b', '(' ], [ 'c', 'd', 'e', 'f', 'g', ')' ] ], null ]
+    ]
+  #.........................................................................................................
+  for [ probe, matcher, error, ] in probes_and_matchers
+    #.......................................................................................................
+    await T.perform probe, matcher, error, -> return new Promise ( resolve, reject ) ->
+      pipeline    = []
+      pipeline.push probe
+      pipeline.push SP.$chunkify_keep ( d ) -> d in [ '(', ')', ]
+      pipeline.push SP.$drain ( collector ) -> resolve collector
+      SP.pull pipeline...
+      #.....................................................................................................
+      return null
+  #.........................................................................................................
+  done()
+  return null
+
+#-----------------------------------------------------------------------------------------------------------
+@[ "$chunkify_toss no postprocessing" ] = ( T, done ) ->
+  probes_and_matchers = [
+    [ [], [], null ]
+    [ 'abcdefg', [ [ 'a', 'b', 'c', 'd', 'e', 'f', 'g' ] ], null ]
+    [ 'ab(cdefg)', [ [ 'a', 'b', ], [ 'c', 'd', 'e', 'f', 'g', ] ], null ]
+    ]
+  #.........................................................................................................
+  for [ probe, matcher, error, ] in probes_and_matchers
+    #.......................................................................................................
+    await T.perform probe, matcher, error, -> return new Promise ( resolve, reject ) ->
+      pipeline    = []
+      pipeline.push probe
+      pipeline.push SP.$chunkify_toss ( d ) -> d in [ '(', ')', ]
+      pipeline.push SP.$drain ( collector ) -> resolve collector
+      SP.pull pipeline...
+      #.....................................................................................................
+      return null
+  #.........................................................................................................
+  done()
+  return null
+
+#-----------------------------------------------------------------------------------------------------------
+@[ "$chunkify_toss with postprocessing" ] = ( T, done ) ->
+  probes_and_matchers = [
+    [ [], [], null ]
+    [ 'abcdefg', [ 'a|b|c|d|e|f|g' ], null ]
+    [ 'ab(cdefg)', [ 'a|b', 'c|d|e|f|g' ], null ]
+    ]
+  #.........................................................................................................
+  for [ probe, matcher, error, ] in probes_and_matchers
+    #.......................................................................................................
+    await T.perform probe, matcher, error, -> return new Promise ( resolve, reject ) ->
+      pipeline    = []
+      pipeline.push probe
+      pipeline.push SP.$chunkify_toss ( ( d ) -> d in [ '(', ')', ] ), ( chunk ) -> chunk.join '|'
+      pipeline.push SP.$drain ( collector ) -> resolve collector
+      SP.pull pipeline...
+      #.....................................................................................................
+      return null
+  #.........................................................................................................
+  done()
+  return null
+
+#-----------------------------------------------------------------------------------------------------------
+@[ "$chunkify_keep with postprocessing" ] = ( T, done ) ->
+  probes_and_matchers = [
+    [ [], [], null ]
+    [ 'abcdefg', [ 'a|b|c|d|e|f|g' ], null ]
+    [ 'ab(cdefg)', [ 'a|b|(', 'c|d|e|f|g|)' ], null ]
+    ]
+  #.........................................................................................................
+  for [ probe, matcher, error, ] in probes_and_matchers
+    #.......................................................................................................
+    await T.perform probe, matcher, error, -> return new Promise ( resolve, reject ) ->
+      pipeline    = []
+      pipeline.push probe
+      pipeline.push SP.$chunkify_keep ( ( d ) -> d in [ '(', ')', ] ), ( chunk ) -> chunk.join '|'
+      pipeline.push SP.$drain ( collector ) -> resolve collector
+      SP.pull pipeline...
+      #.....................................................................................................
+      return null
+  #.........................................................................................................
+  done()
+  return null
+
 ###
 
 
@@ -868,6 +956,11 @@ jr                        = JSON.stringify
 
 ############################################################################################################
 unless module.parent?
+  # test @[ "$chunkify 1"                       ]
+  # test @[ "$chunkify_keep no postprocessing"  ]
+  # test @[ "$chunkify_toss no postprocessing"  ]
+  # test @[ "$chunkify_toss with postprocessing"  ]
+  test @[ "$chunkify_keep with postprocessing"  ]
   # test @, 'timeout': 30000
   # test @[ "$filter" ]
   # test @[ "end push source (2)"             ]
@@ -876,7 +969,7 @@ unless module.parent?
   # test @[ "remit 2"                         ]
   # test @[ "remit with end detection 1"      ]
   # test @[ "duct_from_transforms"            ]
-  test @[ "composability (through)"                 ]
+  # test @[ "composability (through)"                 ]
   # test @[ "composability (source)"                 ]
   # test @[ "composability (sink)" ]
   # test @[ "remit with end detection 2"      ]
