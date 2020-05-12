@@ -94,6 +94,43 @@ drain has been constructed and is started with `pull()`.
   send ) -> ...`; calling `modify t` without any further arguments is equivalent to `t` (the transform
   itself).
 
+* **`@chunkify_*()`**—cut stream by observing boundaries. Depending on whether to keep or toss datoms
+  recognbized by the `filter` function as boundaries, use either
+  * **`@$chunkify_keep = ( filter, postprocess = null ) ->`** or
+  * **`@$chunkify_toss = ( filter, postprocess = null ) ->`**
+  The second, optional `postprocess` argument must be a function when given; it will receive a list of
+  datoms and may return any value which will then be sent on. Sample application:
+
+  ```coffee
+  filter      = ( d ) -> d in [ '(', ')', ]
+  postprocess = ( chunk ) -> chunk.join '|'
+  pipeline    = []
+  pipeline.push 'ab(cdefg)'
+  pipeline.push SP.$chunkify_keep filter, postprocess
+  pipeline.push SP.$show()
+  pipeline.push SP.$drain -> resolve()
+  SP.pull pipeline...
+  ```
+
+  will print
+
+  ```
+  'a|b|('
+  'c|d|e|f|g|)'
+  ```
+
+  Had we used `SP.$chunkify_toss filter, postprocess` instead, the output would have been
+
+  ```
+  'a|b'
+  'c|d|e|f|g'
+  ```
+
+  So if one just wanted to collect all stream items into a single list, one would use either `SP.$collect()`
+  or else an argument to the drain transform, as in `SP.$drain ( collector ) -> resolve collector`; if one
+  wanted to collect all stream items into multiple lists, then `SP.$chunkify_{keep|toss} filter, ...` is the
+  way to go.
+
 ### Modifiers and `$before_first()`, `$after_last()`
 
 * `{ first, last, before, after, between, }`
