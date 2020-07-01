@@ -80,7 +80,7 @@ assign                    = Object.assign
       settings[ key ] = [ take_second, value, ] for key, value of settings
       #.....................................................................................................
       return @$ settings, ( d, send ) =>
-        if ( CND.isa_list d ) and ( d[ 0 ] is take_second )
+        if ( isa.list d ) and ( d[ 0 ] is take_second )
           method d[ 1 ]
         else
           method d
@@ -91,7 +91,7 @@ assign                    = Object.assign
 
 #-----------------------------------------------------------------------------------------------------------
 @$filter = ( filter ) ->
-  unless ( type = CND.type_of filter ) is 'function'
+  unless ( type = type_of filter ) is 'function'
     throw new Error "^steampipes/$filter@5663^ expected a function, got a #{type}"
   return @$ ( data, send ) => if ( filter data ) then send data
 

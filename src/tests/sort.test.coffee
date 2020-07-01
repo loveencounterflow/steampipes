@@ -57,8 +57,8 @@ sort = ( values ) -> new Promise ( resolve, reject ) =>
   probes_and_matchers = [
     [[4,9,10,3,2,null],[2,3,4,9,10],null]
     [[4,9,10,3,2,null],[2,3,4,9,10],null]
-    [[4,9,10,"frob",3,2,null],null,"unable to compare a text to a number"]
-    [["a",1,"z","foo"],null,"unable to compare a number to a text"]
+    [[4,9,10,"frob",3,2,null],null,"unable to compare a text to a float"]
+    [["a",1,"z","foo"],null,"unable to compare a float to a text"]
     ]
   count     = probes_and_matchers.length
   source    = SP.new_push_source()

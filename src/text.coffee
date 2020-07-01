@@ -53,7 +53,7 @@ echo                      = CND.echo.bind CND
     if data?
       if is_first
         is_first  = no
-        type      = CND.type_of data
+        type      = type_of data
         switch type
           when 'text'
             joiner ?= ''
@@ -62,7 +62,7 @@ echo                      = CND.echo.bind CND
           else
             throw new Error "µ66908 expected a text or a buffer, got a #{type}"
       else
-        unless ( this_type = CND.type_of data ) is type
+        unless ( this_type = type_of data ) is type
           throw new Error "µ67031 expected a #{type}, got a #{this_type}"
       length += data.length
       collector.push data
@@ -75,25 +75,25 @@ echo                      = CND.echo.bind CND
 #-----------------------------------------------------------------------------------------------------------
 @$as_line = ->
   return @$map ( line ) =>
-    "µ67154 expected a text, got a #{type}" unless ( type = CND.type_of line ) is 'text'
+    "µ67154 expected a text, got a #{type}" unless ( type = type_of line ) is 'text'
     line + '\n'
 
 #-----------------------------------------------------------------------------------------------------------
 @$trim = ->
   return @$map ( line ) =>
-    "µ67277 expected a text, got a #{type}" unless ( type = CND.type_of line ) is 'text'
+    "µ67277 expected a text, got a #{type}" unless ( type = type_of line ) is 'text'
     return line.trim()
 
 #-----------------------------------------------------------------------------------------------------------
 @$skip_empty = ->
   return @$filter ( line ) =>
-    "µ67400 expected a text, got a #{type}" unless ( type = CND.type_of line ) is 'text'
+    "µ67400 expected a text, got a #{type}" unless ( type = type_of line ) is 'text'
     return line.length > 0
 
 #-----------------------------------------------------------------------------------------------------------
 @$skip_blank = ->
   return @$filter ( line ) =>
-    "µ67523 expected a text, got a #{type}" unless ( type = CND.type_of line ) is 'text'
+    "µ67523 expected a text, got a #{type}" unless ( type = type_of line ) is 'text'
     return not ( line.match /^\s*$/ )?
 
 #-----------------------------------------------------------------------------------------------------------

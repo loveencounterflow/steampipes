@@ -5,7 +5,7 @@
 CND                       = require 'cnd'
 badge                     = 'STEAMPIPES/SORT'
 debug                     = CND.get_logger 'debug',     badge
-
+types                     = require './types'
 
 # #-----------------------------------------------------------------------------------------------------------
 # @$sort = ( settings ) ->
@@ -51,17 +51,17 @@ debug                     = CND.get_logger 'debug',     badge
     #.......................................................................................................
     type_of = ( x ) =>
       ### NOTE for the purposes of magnitude comparison, `Infinity` can be treated as a number: ###
-      R = CND.type_of x
-      return if R is 'infinity' then 'number' else R
+      R = types.type_of x
+      return if R is 'infinity' then 'float' else R
     #.......................................................................................................
     validate_type = ( type_a, type_b, include_list = no ) =>
       unless type_a is type_b
         throw new Error "µ35423 unable to compare a #{type_a} to a #{type_b}"
       if include_list
-        unless type_a in [ 'number', 'date', 'text', 'list', ]
+        unless type_a in [ 'float', 'date', 'text', 'list', ]
           throw new Error "µ36188 unable to compare values of type #{type_a}"
       else
-        unless type_a in [ 'number', 'date', 'text', ]
+        unless type_a in [ 'float', 'date', 'text', ]
           throw new Error "µ36953 unable to compare values of type #{type_a}"
       return null
     #.......................................................................................................
