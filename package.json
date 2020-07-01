@@ -27,13 +27,13 @@
   "homepage": "https://github.com/loveencounterflow/steampipes",
   "dependencies": {
     "@uppy/fs-tail-stream": "^1.2.0",
-    "cnd": "^6.0.0",
-    "datom": "^5.0.0",
-    "intertype": "^3.4.1",
-    "multimix": "^2.2.1",
+    "cnd": "^9.0.0",
+    "datom": "^7.0.3",
+    "intertype": "^7.0.2",
+    "multimix": "^4.1.0",
     "timsort": "^0.3.0"
   },
   "devDependencies": {
-    "guy-test": "^2.0.1"
+    "guy-test": "^4.0.1"
   }
 }
