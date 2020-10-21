@@ -34,6 +34,7 @@ class Steampipes extends Multimix
   @include require './standard-transforms'
   @include require './text'
   @include require './windowing'
+  @include require './fs-fifos-and-tailing'
 
   #---------------------------------------------------------------------------------------------------------
   constructor: ( @settings = null ) ->
