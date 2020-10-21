@@ -131,7 +131,7 @@ types                     = require './types'
 #-----------------------------------------------------------------------------------------------------------
 @tee_write_to_nodejs_stream = ( stream ) ->
   ### TAINT code duplication ###
-  throw new Error "µ76644 method `tee_write_to_nodejs_stream()` not yet implemented"
+  # throw new Error "µ76644 method `tee_write_to_nodejs_stream()` not yet implemented"
   switch ( arity = arguments.length )
     when 1 then null
     else throw new Error "µ9983 expected 1 argument, got #{arity}"
