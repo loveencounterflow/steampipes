@@ -356,6 +356,10 @@ catch error
   detected or be handled appropriately.
 * [X] implement `$chunkify()` (as configurable variant of `$collect()`?); see code comment in standard
   transforms
+* [ ] implement file tailing using e.g. https://github.com/lucagrulla/node-tail
+* [ ] implement reading from Unix FIFOs, see https://stackoverflow.com/a/18226566/7568091
+* [ ] replace current implementation of `$split()` with one based on `intertext-splitlines`
+* [ ] implement `$batch size`
 
 ### Future: JS Pipeline Operator
 
