@@ -264,17 +264,17 @@ echo                      = CND.echo.bind CND
   duct_A  = SP.pull pipeline_A...
   duct_B  = SP.pull pipeline_B...
 
-#-----------------------------------------------------------------------------------------------------------
-@_integrate_wyes = ( transforms... ) ->
-  # debug '^776665^', transforms
-  # for transform, wye_idx in transforms
-  #   if transform[ @marks.isa_wye ]
-  #     return @_integrate_wye transforms, wye_idx
-  return null
+# #-----------------------------------------------------------------------------------------------------------
+# @_integrate_wyes = ( transforms... ) ->
+#   # debug '^776665^', transforms
+#   # for transform, wye_idx in transforms
+#   #   if transform[ @marks.isa_wye ]
+#   #     return @_integrate_wye transforms, wye_idx
+#   return null
 
 #-----------------------------------------------------------------------------------------------------------
 @pull = ( transforms... ) ->
-  return duct if ( duct = @_integrate_wyes transforms... )?
+  # return duct if ( duct = @_integrate_wyes transforms... )?
   duct = @_pull transforms...
   #.........................................................................................................
   if isa.function           duct.transforms[ 0 ].start  then        duct.transforms[ 0 ].start()
