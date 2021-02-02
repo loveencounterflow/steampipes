@@ -34,7 +34,7 @@ types.declare 'pipestreams_$window_settings',
 types.declare 'pipestreams_$lookaround_settings',
   tests:
     "x is an object":                         ( x ) -> @isa.object x
-    "x.delta is a count":                     ( x ) -> @isa.count x.delta
+    "x.delta is a cardinal":                  ( x ) -> @isa.cardinal x.delta
 
 #-----------------------------------------------------------------------------------------------------------
 @$window = ( settings ) ->
