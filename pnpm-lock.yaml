@@ -4,7 +4,7 @@ dependencies:
   datom: 8.0.0
   intertext-splitlines: 1.2.0
   intertype: 7.6.3
-  jfee: 0.1.1
+  jfee: 0.1.3
   multimix: 5.0.0
   timsort: 0.3.0
 devDependencies:
@@ -70,13 +70,13 @@ packages:
       multimix: 5.0.0
     resolution:
       integrity: sha512-77FmgaqGydWBc5OIde+geMj4+dGZ1i5UIFXM4C9QHiEIBjh+Gojycsb7XtRYYLNhNJepa+jotHXfAGPngHatzw==
-  /jfee/0.1.1:
+  /jfee/0.1.3:
     dependencies:
       cnd: 9.2.1
       intertype: 7.6.3
     dev: false
     resolution:
-      integrity: sha512-nnl7iOUDqM4DC50jUelWDHhXij0LjtMyT0uRL7vaB67k6B+fNoSbTq0/E8GQCQYT9uqk78qPGp4k6yw0u3r1Dg==
+      integrity: sha512-TteheV7ceYKk1AVoU74tngE9vTAn1EtNhZD5tYWJmfT8JMc+wn0H4RYQl7kwsJ/yTWErvJcrtFMDeY0vpJWcUQ==
   /letsfreezethat/3.0.3:
     dev: false
     resolution:
@@ -111,6 +111,6 @@ specifiers:
   guy-test: ^4.0.1
   intertext-splitlines: ^1.2.0
   intertype: ^7.0.2
-  jfee: ^0.1.1
+  jfee: 0.1.3
   multimix: 5.0.0
   timsort: ^0.3.0
