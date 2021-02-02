@@ -57,3 +57,14 @@ assign                    = Object.assign
   validate.steampipes_new_wye_settings settings
   return { [@marks.isa_wye], settings, source, }
 
+#-----------------------------------------------------------------------------------------------------------
+@source_from_child_process = ( cp, settings ) ->
+  JFEE = require 'jfee'
+  ### TAINT should wait until pipeline pulled? ###
+  for await x from JFEE.Receiver.from_child_process cp, settings
+    yield x
+  return null
+
+
+
+
