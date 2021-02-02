@@ -65,6 +65,20 @@ assign                    = Object.assign
     yield x
   return null
 
+### TAINT we should use this implementation but fails in hengist/dev/steampipes/src/nodejs-eventemitter-as-stream-source.coffee
+#-----------------------------------------------------------------------------------------------------------
+@source_from_child_process_2 = ( cp, settings ) ->
+  JFEE = require 'jfee'
+  R = @new_push_source()
+  R.start = ->
+    setImmediate =>
+      for await x from JFEE.Receiver.from_child_process cp, settings
+        R.send x
+      R.end()
+    return null
+  return R
+###
+
 #-----------------------------------------------------------------------------------------------------------
 @source_from_readstream = ( readstream, settings ) ->
   JFEE = require 'jfee'
