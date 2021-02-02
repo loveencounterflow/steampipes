@@ -65,6 +65,18 @@ assign                    = Object.assign
     yield x
   return null
 
+#-----------------------------------------------------------------------------------------------------------
+@source_from_readstream = ( readstream, settings ) ->
+  JFEE = require 'jfee'
+  R = @new_push_source()
+  R.start = ->
+    setImmediate =>
+      for await x from JFEE.Receiver.from_readstream readstream, settings
+        R.send x
+      R.end()
+    return null
+  return R
+
 
 
 
