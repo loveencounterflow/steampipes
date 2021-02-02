@@ -86,6 +86,9 @@ echo                      = CND.echo.bind CND
     switch type = type_of transform
       when 'function'           then return { type: 'through', }
       when 'generatorfunction'  then return { type: 'source', must_call: true, }
+      when 'asyncgenerator'
+        transform[ @marks.async ] = true
+        return { type: 'source', must_call: false, }
     throw new Error "^steampipes/pullremit@7003^ expected an iterable, a function, a generator function or a sink, got a #{type}"
   R.mode = if transform[ @marks.async ]? then 'async' else 'sync'
   return R
@@ -300,7 +303,7 @@ echo                      = CND.echo.bind CND
   return @_push duct if duct.transforms[ 0 ][ @marks.isa_pusher ]?
   first_bucket = duct.buckets[ 0 ]
   #.........................................................................................................
-  for d from duct.transforms[ 0 ]
+  for await d from duct.transforms[ 0 ]
     break if duct.has_ended
     first_bucket.push d
     await duct.exhaust_async_pipeline()
