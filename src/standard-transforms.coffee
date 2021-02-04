@@ -241,6 +241,36 @@ e.g. `$surround { first: 'first!', between: 'to appear in-between two values', }
     send d
 
 
+#===========================================================================================================
+# SELECT
+#-----------------------------------------------------------------------------------------------------------
+@$select = ( selector, callback ) ->
+  ### Call `callback` function when `DATOM.select d, selector` returns `true`. Callback can have zero or
+  one argument in which case it will be a passive `$watch()`er; if it has two arguments as in
+  `( d, send ) ->` then the callback is responsible for sending data on into the pipeline. In any event
+  all events that do *not* match `selector` will be sent on to downstream. ###
+  DATOM = require 'datom'
+  validate.function callback
+  #.........................................................................................................
+  switch arity = callback.length
+    #.......................................................................................................
+    when 0
+      return @$watch ( d ) =>
+        callback() if DATOM.select d, selector
+    #.......................................................................................................
+    when 1
+      return @$watch ( d ) =>
+        callback d if DATOM.select d, selector
+    #.......................................................................................................
+    when 2
+      return @$ ( d, send ) =>
+        if DATOM.select d, selector then  callback d, send
+        else                              send d
+        return null
+    #.......................................................................................................
+    else throw new Error "expected callback with up to 2 arguments, got one with #{arity}"
+  return null
+
 
 
 
