@@ -1,10 +1,10 @@
 dependencies:
   '@uppy/fs-tail-stream': 1.2.0
   cnd: 9.2.1
-  datom: 8.0.0
-  intertext-splitlines: 1.2.0
-  intertype: 7.6.3
-  jfee: 0.1.3
+  datom: 8.0.3
+  intertext-splitlines: 1.2.1
+  intertype: 7.6.5
+  jfee: 0.1.4
   multimix: 5.0.0
   timsort: 0.3.0
 devDependencies:
@@ -25,25 +25,25 @@ packages:
     hasBin: true
     resolution:
       integrity: sha512-JszZtSlOCxkIvNPKpw1PmIcQUjYO+pBqVoKVH2STHLtG4JHHJ1NHowv39lhyxzlPxUTZk7pZ3qO7CfrfJ8ZSKw==
-  /cupofjoe/0.1.1:
+  /cupofjoe/0.2.1:
     dependencies:
       cnd: 9.2.1
-      intertype: 7.6.3
-      multimix: 4.1.0
+      intertype: 7.6.5
+      multimix: 5.0.0
     dev: false
     resolution:
-      integrity: sha512-lNapdhUmwN0y94FGYvGubow+ZznI/A8+AlETPRli5+N4WkSnCys9Md1MiG8ZFPhjpS5Z+/NYC8nWdu+sLOOd/Q==
-  /datom/8.0.0:
+      integrity: sha512-kZHlb3DmPu2jV0rmZvqsGwI8OEy+VEyN+50bUFp95HrD1buun7G9BVpf286UiL+sNfjXEn4EdbAFHASkxibSHQ==
+  /datom/8.0.3:
     dependencies:
       cnd: 9.2.1
-      cupofjoe: 0.1.1
+      cupofjoe: 0.2.1
       emittery: 0.6.0
-      intertype: 7.6.3
-      letsfreezethat: 3.0.3
-      multimix: 4.1.0
+      intertype: 7.6.5
+      letsfreezethat: 3.1.0
+      multimix: 5.0.0
     dev: false
     resolution:
-      integrity: sha512-sEcFHTEq2GJq2WUyJ+nOCvT3rHY3kalKmMyFg2z/DI2zFqh/ylJWsHHZphKM937vVEcxXvi0/UDSBI+s2B2I0A==
+      integrity: sha512-brh+I+TIC89r891ekwWtzaO6zvQu/hgyEdfm3gs8WOF3jJ+nCpwnoF2/96jUZibaKCfFjxpqQbQu3K7/SkA64g==
   /emittery/0.6.0:
     dev: false
     engines:
@@ -58,35 +58,36 @@ packages:
     dev: true
     resolution:
       integrity: sha512-NH2ZCLVFCEGmTe2znmCuflSL8Uo1jTAXTSpYOkijstXFwonLtaScfmkVw5e2dL9GAcQ0GlPZRhdhySbhUCgVSg==
-  /intertext-splitlines/1.2.0:
+  /intertext-splitlines/1.2.1:
     dependencies:
       cnd: 9.2.1
-      intertype: 7.6.3
+      intertype: 7.6.5
     dev: false
     resolution:
-      integrity: sha512-K88EL5l2F01CjSux+MZeKqOGNWAIKKYDPsetDB7WTvwLnT/EMgp/JXOjAJqhyFC2ji5vMYHKnbtM7vxS+iLoog==
+      integrity: sha512-bnIqoTOk8ie/jE3g4ec7h5ZdjpUNF+ynQ0/oTwn3I973vhCjMtnd9DCp/i1hxVMO55uqDgyYQ42f44Quzc6zXg==
   /intertype/7.6.3:
     dependencies:
       multimix: 5.0.0
+    dev: true
     resolution:
       integrity: sha512-77FmgaqGydWBc5OIde+geMj4+dGZ1i5UIFXM4C9QHiEIBjh+Gojycsb7XtRYYLNhNJepa+jotHXfAGPngHatzw==
-  /jfee/0.1.3:
+  /intertype/7.6.5:
+    dependencies:
+      multimix: 5.0.0
+    dev: false
+    resolution:
+      integrity: sha512-763YK3ezLYy9FkX+cTTg/qwGHteqlaTMiec9a2sVAKm7kXp9e7QkzbyYS6u4CcbLxx12L8bcRbe3SFsPeaJCMA==
+  /jfee/0.1.4:
     dependencies:
       cnd: 9.2.1
-      intertype: 7.6.3
+      intertype: 7.6.5
     dev: false
     resolution:
-      integrity: sha512-TteheV7ceYKk1AVoU74tngE9vTAn1EtNhZD5tYWJmfT8JMc+wn0H4RYQl7kwsJ/yTWErvJcrtFMDeY0vpJWcUQ==
-  /letsfreezethat/3.0.3:
+      integrity: sha512-XM3NLlcQGunAXg2c4Os28LWzLjbnrQE7NMwc4q38hgsAbTMIKu1IXceEz4sVXp55fU4Q0c+8+5OgMWxRgnpFNw==
+  /letsfreezethat/3.1.0:
     dev: false
     resolution:
-      integrity: sha512-Ckrod5Pcp056zgpEZNEk8P+m7QqHWLOU7NwoCLdSpJutdDvE8MIUPVYIUZpewbHZKFS6hfOCcbk3E4AC7fu4hg==
-  /multimix/4.1.0:
-    dependencies:
-      cnd: 9.2.1
-    dev: false
-    resolution:
-      integrity: sha512-GUV1SMXk7ZS/DiLHNYA6G43I+ORymTRvixCXBebR8kIFWy/1Syl7WmoI0dBvPzvs7goIK3VbCRO+EtIEP2R11w==
+      integrity: sha512-jJ1nvvQi6unW0WifjNPMIb64Byom0EXzSKWFYA++EpyjK3qv1J2pqeSoEJ61tGJoNG0GoNjPoeLYhxW16riZaA==
   /multimix/5.0.0:
     resolution:
       integrity: sha512-N9cdGSDDD7kxOV7R6e4iZqsHTZ4F4iiSDWqMcVqx4gEH6HBtRXav39Gj3fgT1YqvBcwPCQuf0Oa5R2cDaLWK8A==
@@ -107,10 +108,10 @@ packages:
 specifiers:
   '@uppy/fs-tail-stream': ^1.2.0
   cnd: ^9.0.0
-  datom: 8.0.0
+  datom: 8.0.3
   guy-test: ^4.0.1
-  intertext-splitlines: ^1.2.0
-  intertype: ^7.0.2
-  jfee: 0.1.3
+  intertext-splitlines: 1.2.1
+  intertype: 7.6.5
+  jfee: 0.1.4
   multimix: 5.0.0
   timsort: ^0.3.0

@@ -28,10 +28,10 @@
   "dependencies": {
     "@uppy/fs-tail-stream": "^1.2.0",
     "cnd": "^9.0.0",
-    "datom": "8.0.0",
-    "intertext-splitlines": "^1.2.0",
-    "intertype": "^7.0.2",
-    "jfee": "0.1.3",
+    "datom": "8.0.3",
+    "intertext-splitlines": "1.2.1",
+    "intertype": "7.6.5",
+    "jfee": "0.1.4",
     "multimix": "5.0.0",
     "timsort": "^0.3.0"
   },
